@@ -158,6 +158,11 @@ class WorkerViewSet(viewsets.ModelViewSet):
             serializer = WorkerSerializer(worker, many=False)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Worker.DoesNotExist:
-            return Response({'detail': getEvaluatorNotExistError()}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                worker = Worker.objects.get(cargo__id_cargos=63)
+                serializer = WorkerSerializer(worker, many=False)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except Worker.DoesNotExist:
+                return Response({'detail': getEvaluatorNotExistError()}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'detail': e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
