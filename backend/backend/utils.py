@@ -28,7 +28,7 @@ def getStringByDate(date):
 
 
 def getAnualPlanError(year, hotelName, coinName) -> str:
-    message = f'Error, el {hotelName} ya tine un plan de venta anual del año {year} con la moneda {coinName}, pruebe con otro año'
+    message = f'Error, el {hotelName} ya tiene un plan de venta anual del año {year} con la moneda {coinName}, pruebe con otro año'
     return message
 
 
@@ -65,7 +65,7 @@ def getNoAdminDeleteMessage(username) -> str:
 
 
 def getUniqueHotelErrorMessage(hotelName) -> str:
-    return f'Ya existe un hotel con el nombre de usuario {hotelName}'
+    return f'Ya existe un hotel con el nombre "{hotelName}"'
 
 
 def getDeleteErrorMessage(objectType) -> str:
@@ -75,20 +75,20 @@ def getDeleteErrorMessage(objectType) -> str:
 def getOperatorErrorMessage(idOperator) -> str:
     operator = Operador.objects.get(id_oper=idOperator)
     worker = Worker.objects.get(operador=operator)
-    message = 'Ya existe un trabajador con el Operador {}, esta ocupado por el trabajador {}'.format(
+    message = 'Ya existe un trabajador con el Operador {}, está ocupado por el trabajador {}'.format(
         operator.descripcion, worker.nombreCompleto())
     return message
 
 
 def getEvaluatorNotExistError() -> str:
-    return 'Error. El trabajador evaluador no esta registrado en la Base de Datos del Sistema, debe importar el ' \
+    return 'Error. El trabajador evaluador no está registrado en la Base de Datos del Sistema, debe importar el ' \
            'mismo, es el trabajador que tiene el cargo de Jefe de Departamento ' \
            'de Servicios Gastronómicos '
 
 
 def getCategoryNoExistError() -> str:
     return 'Ha ocurrido un error al reconstruir la lista de los Cargos de Trabajadores, recuerde que los cargos ' \
-           'dependen de las categorías ocupacionales, por favor, asegurese de tener sincronizadas todas las ' \
+           'dependen de las categorías ocupacionales, por favor, asegúrese de tener sincronizadas todas las ' \
            'Categorías Ocupacionales del ZunPr '
 
 
