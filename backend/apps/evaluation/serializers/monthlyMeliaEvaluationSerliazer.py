@@ -35,7 +35,7 @@ class MonthlyMeliaEvaluationMiniSerliazer(serializers.ModelSerializer):
             else:
                 return "Muy bien"
         except IndexError:
-            return 'Error en calificación'
+            return 'Error en calificaciÃ³n'
 
 
 class MonthlyMeliaEvaluationSerliazer(serializers.ModelSerializer):
