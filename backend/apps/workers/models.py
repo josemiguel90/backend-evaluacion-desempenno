@@ -23,6 +23,7 @@ class Worker(models.Model):
     cargo = models.ForeignKey(Charge, models.PROTECT, default=None, null=True)
     activo = models.BooleanField(default=False)
     operador = models.OneToOneField(Operador, on_delete=models.PROTECT, default=None, null=True, related_name='worker')
+    area_evaluacion = models.ForeignKey('evaluation_in_area.EvaluationArea', on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return f'Trabajador: {self.nombre} - {self.apell1}'
