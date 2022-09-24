@@ -12,7 +12,6 @@ class EvaluationArea(models.Model):
 
     name = models.CharField(max_length=80, null=False)
     boss_charge = models.ForeignKey(Charge, on_delete=models.PROTECT, null=False)
-    aspects = models.ManyToManyField('EvaluationAspect')
 
 
 class EvaluationAspect(models.Model):
@@ -32,6 +31,7 @@ class EvaluationAspect(models.Model):
                                         ('CHECK_LIST', CHECK_LIST_TYPE)))
     related_melia_aspect = models.ForeignKey(to='MeliaAspect', on_delete=models.PROTECT,
                                              related_name='evaluations_aspects')
+    area = models.ForeignKey(to=EvaluationArea, on_delete=models.PROTECT, related_name='aspects')
     active = models.BooleanField(null=False)
 
 
