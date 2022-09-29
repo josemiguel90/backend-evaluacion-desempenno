@@ -14,6 +14,7 @@ from apps.salesPlan.urls import router as salesPlansRouters
 from apps.payTime.urls import router as payTimeRouters
 from apps.evaluation.urls import router as evaluationRouter
 from .dashboardViews import views as dashViews
+from apps.evaluation_in_area.urls import router as evaluation_in_area_router
 
 
 class DefaulRouter(routers.DefaultRouter):
@@ -33,6 +34,7 @@ router.extend(chargeRouters)
 router.extend(salesPlansRouters)
 router.extend(payTimeRouters)
 router.extend(evaluationRouter)
+router.extend(evaluation_in_area_router)
 
 urlpatterns = [
     # Other Views, Login, User Profile, Update Password and others (Functional Views)
