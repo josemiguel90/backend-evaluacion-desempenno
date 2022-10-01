@@ -2,7 +2,6 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from backend.extraPermissions import IsFoodAndDrinkBoss
 from backend.utils import getCategoryNoExistError
 from .serializers import Charge, ChargeSerializer
 from ..category.models import OccupationalCategory
@@ -11,7 +10,7 @@ from ..category.models import OccupationalCategory
 class ChargeViewSet(viewsets.ModelViewSet):
     queryset = Charge.objects.filter(activo=True)
     serializer_class = ChargeSerializer
-    permission_classes = [IsAuthenticated, IsFoodAndDrinkBoss]
+    permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=['POST'])
     def rebuildList(self, request):
