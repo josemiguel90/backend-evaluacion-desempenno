@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from backend import utils
 from ..serializers.userSerializer import UserSerializer, UserMiniSerializer, UserSerializerWithToken
+from ...evaluation_in_area.models import EvaluationArea
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -40,6 +41,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         data = request.data
+
+        if data.get('area'):
+            evaluation_area = EvaluationArea.objects.get(pk=data.get('area'))
+        else:
+            evaluation_area = None
+
         try:
             get_user_model().objects.create_user(
                 username=data.get('username'),
@@ -49,12 +56,17 @@ class UserViewSet(viewsets.ModelViewSet):
                 is_staff=data.get('isAdmin'),
                 password=make_password(data.get('password')),
                 isFoodAndDrinkBoss=data.get('isFoodAndDrinkBoss'),
+                area=evaluation_area
             )
             return Response({'Users Created Successfully'}, status=status.HTTP_200_OK)
-        except IntegrityError:
+        except IntegrityError as e:
             message = 'Ya existe un usuario con el nombre de usuario {}'.format(
                 data['username'])
+            if 'area_id' in e.args[0]:
+                message = f'El área {evaluation_area.name} ya fue asignada'
+
             return Response({'detail': message}, status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
             return Response({'detail': e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
 

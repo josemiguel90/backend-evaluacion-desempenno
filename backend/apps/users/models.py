@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager,\
     PermissionsMixin
 
+from apps.evaluation_in_area.models import EvaluationArea
+
+
 class UserManager(BaseUserManager):
 
     def create_user(self, username, password=None, **extra_fields):
@@ -35,6 +38,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     # ROLS
     is_staff = models.BooleanField(default=False)
     isFoodAndDrinkBoss = models.BooleanField(default=False)
+    area = models.OneToOneField(to=EvaluationArea, on_delete=models.SET_NULL, null=True, related_name='users')
     
     objects = UserManager()
     USERNAME_FIELD = 'username'

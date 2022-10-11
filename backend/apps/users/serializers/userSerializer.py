@@ -41,7 +41,7 @@ class UserSerializer(UserMiniSerializer):
     class Meta:
         model = get_user_model()
         fields = ['id', 'username', 'first_name', 'last_name', 'email', 'rol', 'isAdmin', 'isFoodAndDrinkBoss',
-                  'date_joined', 'last_login', 'permissions']
+                  'date_joined', 'last_login', 'permissions', 'area']
 
     def get_permissions(self, obj):
         permissions = obj.get_user_permissions()
