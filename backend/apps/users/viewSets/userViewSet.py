@@ -41,11 +41,13 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         data = request.data
+        evaluation_area = None
+        try:
+            if data.get('area'):
+                evaluation_area = EvaluationArea.objects.get(pk=data.get('area'))
 
-        if data.get('area'):
-            evaluation_area = EvaluationArea.objects.get(pk=data.get('area'))
-        else:
-            evaluation_area = None
+        except EvaluationArea.DoesNotExist as e:
+            return Response({'detail': f'El área con id {data.get("area")} no existe'}, status.HTTP_404_NOT_FOUND)
 
         try:
             get_user_model().objects.create_user(
