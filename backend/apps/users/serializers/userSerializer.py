@@ -12,7 +12,7 @@ class UserMiniSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ['id', 'username', 'name', 'email', 'rol', 'isAdmin', 'isFoodAndDrinkBoss']
+        fields = ['id', 'username', 'name', 'email', 'rol', 'isAdmin', 'isFoodAndDrinkBoss', 'area']
         extra_kwargs = {'password': {'write_only': True, 'required': True}}
 
     def get_isAdmin(self, obj):
@@ -28,10 +28,15 @@ class UserMiniSerializer(serializers.ModelSerializer):
         return obj.isFoodAndDrinkBoss
 
     def get_rol(self, obj):
+        print(obj.area)
         if self.get_isAdmin(obj):
             return 'Administrador'
         if self.get_isFoodAndDrinkBoss(obj):
             return 'Jefe de Alimentos y Bebidas del complejo'
+
+        if obj.area:
+            return obj.area.boss_charge.descripcion
+
         return 'Usuario normal'
 
 
