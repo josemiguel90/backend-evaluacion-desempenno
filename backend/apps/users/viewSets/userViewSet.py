@@ -57,11 +57,11 @@ class UserViewSet(viewsets.ModelViewSet):
                 email=data.get('email'),
                 is_staff=data.get('isAdmin'),
                 password=make_password(data.get('password')),
-                isFoodAndDrinkBoss=data.get('isFoodAndDrinkBoss'),
                 area=evaluation_area
             )
             return Response({'Users Created Successfully'}, status=status.HTTP_200_OK)
         except IntegrityError as e:
+            print(e.args)
             message = 'Ya existe un usuario con el nombre de usuario {}'.format(
                 data['username'])
             if 'area_id' in e.args[0]:

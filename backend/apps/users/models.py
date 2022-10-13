@@ -37,7 +37,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # ROLS
     is_staff = models.BooleanField(default=False)
-    isFoodAndDrinkBoss = models.BooleanField(default=False)
     area = models.OneToOneField(to=EvaluationArea, on_delete=models.SET_NULL, null=True, related_name='users')
     
     objects = UserManager()
