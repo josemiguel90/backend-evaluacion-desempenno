@@ -75,6 +75,8 @@ class UserViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         """ Get data from frontend """
         data = request.data
+        evaluation_area_id = data.get('area')
+        evaluation_area = None
         try:
             user = self.get_object()
             """ Validate only an Admin user """
@@ -82,20 +84,33 @@ class UserViewSet(viewsets.ModelViewSet):
             if user.is_staff and not data.get('isAdmin') and onlyOneAdmin:
                 raise Exception(utils.getNoAdminDeleteMessage(user.username))
 
+            # get evaluation area
+            evaluation_area = EvaluationArea.objects.get(pk=evaluation_area_id) if evaluation_area_id else None
+
             """ Edit User Fields """            
             user.username = data.get('username')
             user.first_name = data.get('first_name')
             user.last_name = data.get('last_name')
             user.email = data.get('email')
             user.is_staff = data.get('isAdmin')
-            user.isFoodAndDrinkBoss=data.get('isFoodAndDrinkBoss')
+            user.isFoodAndDrinkBoss = data.get('isFoodAndDrinkBoss')
+            user.area = evaluation_area
+
             user.save()
 
             """ Return Response """
             return Response({'Users Edited Successfully'}, status=status.HTTP_200_OK)
-        except IntegrityError:
+
+        except EvaluationArea.DoesNotExist:
+            return Response({'detail': f'El área de evaluación con id {evaluation_area_id} no existe'},
+                            status.HTTP_404_NOT_FOUND)
+
+        except IntegrityError as e:
             message = 'Ya existe un usuario con el nombre de usuario {}'.format(data['username'])
+            if 'area_id' in e.args[0]:
+                message = f'El área {evaluation_area.name} ya fue asignada'
             return Response({'detail': message}, status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
             return Response({'detail': e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
 
