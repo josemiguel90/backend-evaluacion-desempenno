@@ -26,7 +26,7 @@ class UserMiniSerializer(serializers.ModelSerializer):
     def get_rol(self, obj):
         print(obj.area)
         if self.get_isAdmin(obj):
-            return 'Administrador'
+            return 'Administrador del sistema'
 
         if obj.area:
             return obj.area.boss_charge.descripcion
