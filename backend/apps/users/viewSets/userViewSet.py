@@ -93,7 +93,6 @@ class UserViewSet(viewsets.ModelViewSet):
             user.last_name = data.get('last_name')
             user.email = data.get('email')
             user.is_staff = data.get('isAdmin')
-            user.isFoodAndDrinkBoss = data.get('isFoodAndDrinkBoss')
             user.area = evaluation_area
 
             user.save()
