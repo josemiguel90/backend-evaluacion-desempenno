@@ -42,6 +42,11 @@ class UserViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         data = request.data
         evaluation_area = None
+
+        if data.get('isAdmin') and data.get('area'):
+            return Response({'detail': 'Un usuario no puede ser evaluador y administrador del sistema al mismo tiempo'},
+                            status.HTTP_400_BAD_REQUEST)
+
         try:
             if data.get('area'):
                 evaluation_area = EvaluationArea.objects.get(pk=data.get('area'))
@@ -77,6 +82,11 @@ class UserViewSet(viewsets.ModelViewSet):
         data = request.data
         evaluation_area_id = data.get('area')
         evaluation_area = None
+
+        if data.get('isAdmin') and data.get('area'):
+            return Response({'detail': 'Un usuario no puede ser evaluador y administrador del sistema al mismo tiempo'},
+                            status.HTTP_400_BAD_REQUEST)
+
         try:
             user = self.get_object()
             """ Validate only an Admin user """
