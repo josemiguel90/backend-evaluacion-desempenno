@@ -1,11 +1,14 @@
 from rest_framework import status
+from rest_framework.exceptions import ValidationError, ErrorDetail
 from rest_framework.response import Response
+from rest_framework.utils.serializer_helpers import ReturnDict
 from rest_framework.viewsets import ModelViewSet
 from apps.evaluation_in_area.models import EvaluationArea
 from apps.evaluation_in_area.serializers.evaluation_area import EvaluationAreaSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.decorators import action
 
+from apps.evaluation_in_area.util import handle_evaluation_area_validation_error
 from apps.users.models import User
 
 
@@ -14,6 +17,18 @@ class EvaluationAreaViewSet(ModelViewSet):
     queryset = EvaluationArea.objects.all()
     serializer_class = EvaluationAreaSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except ValidationError as e:
+            return handle_evaluation_area_validation_error(e, request)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            return super().update(request, *args, **kwargs)
+        except ValidationError as e:
+            return handle_evaluation_area_validation_error(e, request)
 
     @action(methods=['POST'], url_path='delete', detail=False)
     def delete_areas(self, request):

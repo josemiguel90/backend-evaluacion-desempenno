@@ -10,7 +10,7 @@ from ..workers.models import Worker
 
 class EvaluationArea(models.Model):
 
-    name = models.CharField(max_length=80, null=False)
+    name = models.CharField(max_length=80, null=False, unique=True)
     boss_charge = models.ForeignKey(Charge, on_delete=models.PROTECT, null=False)
 
 
