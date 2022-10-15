@@ -71,6 +71,8 @@ class UserViewSet(viewsets.ModelViewSet):
                 data['username'])
             if 'area_id' in e.args[0]:
                 message = f'El área {evaluation_area.name} ya fue asignada'
+            elif 'email' in e.args[0]:
+                message = f'Ya existe un usuario con el email {data.get("email")}'
 
             return Response({'detail': message}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -116,8 +118,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
         except IntegrityError as e:
             message = 'Ya existe un usuario con el nombre de usuario {}'.format(data['username'])
+
             if 'area_id' in e.args[0]:
                 message = f'El área {evaluation_area.name} ya fue asignada'
+            elif 'email' in e.args[0]:
+                message = f'Ya existe un usuario con el email {data.get("email")}'
+
             return Response({'detail': message}, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
