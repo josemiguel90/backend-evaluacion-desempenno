@@ -48,4 +48,6 @@ urlpatterns = [
     path('getTableEvaluations/', dashViews.getTableEvaluations),
     # Django Rest Framework Urls
     path('', include(router.urls)),
+    # Evaluation Area Urls
+    path('', include('apps.evaluation_in_area.urls'))
 ]
