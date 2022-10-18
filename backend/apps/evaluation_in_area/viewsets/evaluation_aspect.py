@@ -47,3 +47,30 @@ class EvaluationAspectViewSet(ModelViewSet):
         aspect.active = False
         aspect.save()
         return Response(status=status.HTTP_200_OK)
+
+    def update(self, request, *args, **kwargs):
+        aspect: EvaluationAspect = self.get_object()
+        data = request.data
+
+        if not aspect.active:
+            return Response({'detail': 'Este indicador ya fue marcado como eliminado'}, status.HTTP_400_BAD_REQUEST)
+        if data.get('area') and data.get('area') != aspect.area.id:
+            return Response({'detail': 'El area de los indicadores no puede ser cambiada'},
+                            status.HTTP_400_BAD_REQUEST)
+        try:
+            melia_aspect = MeliaAspect.objects.get(pk=data.get('related_melia_aspect'))
+
+            aspect.name = data.get('name')
+            aspect.bad_option = data.get('bad_option')
+            aspect.regular_option = data.get('regular_option')
+            aspect.good_option = data.get('good_option')
+            aspect.very_good_option = data.get('very_good_option')
+            aspect.related_melia_aspect = melia_aspect
+            aspect.save()
+
+            aspect_serializer = EvaluationAspectSerializer(aspect)
+            return Response(aspect_serializer.data, status.HTTP_200_OK)
+
+        except MeliaAspect.DoesNotExist:
+            return Response({'detail': f'No existe el indicador de Melia con el id {data.get("related_melia_aspect")}'},
+                            status.HTTP_404_NOT_FOUND)
