@@ -15,7 +15,13 @@ class IsEvaluatorFromArea(BasePermission):
     def has_permission(self, request, view):
         data = request.data
         area = data.get('area')
-        return request.user.area.id == area
+
+        if request.user.area is None:
+            return False
+
+        if area and request.user.area:
+            return request.user.area.id == area
+        return True
 
     def has_object_permission(self, request, view, obj):
         return request.user.area == obj.area

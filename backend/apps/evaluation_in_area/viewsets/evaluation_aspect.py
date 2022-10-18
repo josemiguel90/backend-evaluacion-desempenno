@@ -41,3 +41,9 @@ class EvaluationAspectViewSet(ModelViewSet):
                             status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'detail': e.args[0]}, status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        aspect: EvaluationAspect = self.get_object()
+        aspect.active = False
+        aspect.save()
+        return Response(status=status.HTTP_200_OK)
