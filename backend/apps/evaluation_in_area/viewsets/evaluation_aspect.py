@@ -12,6 +12,11 @@ class EvaluationAspectViewSet(ModelViewSet):
     serializer_class = EvaluationAspectSerializer
     permission_classes = [IsEvaluatorFromArea]
 
+    def list(self, request, *args, **kwargs):
+        aspects = EvaluationAspect.objects.filter(area=request.user.area)
+        aspect_serializer = EvaluationAspectSerializer(aspects, many=True)
+        return Response(aspect_serializer.data, status.HTTP_200_OK)
+
     def create(self, request, *args, **kwargs):
         data = request.data
         try:
@@ -74,3 +79,4 @@ class EvaluationAspectViewSet(ModelViewSet):
         except MeliaAspect.DoesNotExist:
             return Response({'detail': f'No existe el indicador de Melia con el id {data.get("related_melia_aspect")}'},
                             status.HTTP_404_NOT_FOUND)
+
