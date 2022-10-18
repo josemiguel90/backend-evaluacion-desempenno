@@ -25,10 +25,12 @@ class EvaluationAspect(models.Model):
     regular_option = models.CharField(max_length=80, null=False)
     good_option = models.CharField(max_length=80, null=False)
     very_good_option = models.CharField(max_length=80, null=False)
-    type = models.IntegerField(null=False,
-                               choices=(('SELECT', SELECTABLE_TYPE),
-                                        ('SALE_PLAN', SALE_PLAN_FULFILMENT_TYPE),
-                                        ('CHECK_LIST', CHECK_LIST_TYPE)))
+    type = models.CharField(null=False,
+                            max_length=15,
+                            default=SELECTABLE_TYPE,
+                            choices=(('SELECT', SELECTABLE_TYPE),
+                                     ('SALE_PLAN', SALE_PLAN_FULFILMENT_TYPE),
+                                     ('CHECK_LIST', CHECK_LIST_TYPE)))
     related_melia_aspect = models.ForeignKey(to='MeliaAspect', on_delete=models.PROTECT,
                                              related_name='evaluations_aspects')
     area = models.ForeignKey(to=EvaluationArea, on_delete=models.PROTECT, related_name='aspects')
