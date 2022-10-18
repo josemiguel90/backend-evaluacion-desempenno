@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from apps.evaluation_in_area.models import EvaluationAspect, MeliaAspect, EvaluationArea
@@ -14,6 +15,12 @@ class EvaluationAspectViewSet(ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         aspects = EvaluationAspect.objects.filter(area=request.user.area)
+        aspect_serializer = EvaluationAspectSerializer(aspects, many=True)
+        return Response(aspect_serializer.data, status.HTTP_200_OK)
+
+    @action(methods=['GET'], detail=False, url_path='active', permission_classes=[IsEvaluatorFromArea])
+    def available_aspects(self, request):
+        aspects = EvaluationAspect.objects.filter(area=request.user.area).filter(active=True)
         aspect_serializer = EvaluationAspectSerializer(aspects, many=True)
         return Response(aspect_serializer.data, status.HTTP_200_OK)
 
@@ -79,4 +86,3 @@ class EvaluationAspectViewSet(ModelViewSet):
         except MeliaAspect.DoesNotExist:
             return Response({'detail': f'No existe el indicador de Melia con el id {data.get("related_melia_aspect")}'},
                             status.HTTP_404_NOT_FOUND)
-
