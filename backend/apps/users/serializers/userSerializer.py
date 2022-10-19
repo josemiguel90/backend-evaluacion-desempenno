@@ -2,6 +2,8 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import serializers
 
+from apps.evaluation_in_area.serializers.evaluation_area import EvaluationAreaSerializer
+
 
 class UserMiniSerializer(serializers.ModelSerializer):
     isAdmin = serializers.SerializerMethodField(read_only=True)
@@ -48,10 +50,11 @@ class UserSerializer(UserMiniSerializer):
 
 class UserSerializerWithToken(UserSerializer):
     token = serializers.SerializerMethodField(read_only=True)
+    area = EvaluationAreaSerializer(read_only=True)
 
     class Meta:
         model = get_user_model()
-        fields = ['id', 'username', 'email', 'name', 'isAdmin', 'rol', 'token']
+        fields = ['id', 'username', 'email', 'name', 'isAdmin', 'rol', 'token', 'area']
 
     def get_token(self, obj):
         token = RefreshToken.for_user(obj)
