@@ -32,7 +32,6 @@ class EvaluationAspectViewSet(ModelViewSet):
         data = request.data
         try:
             related_melia_aspect = MeliaAspect.objects.get(pk=data.get('related_melia_aspect'))
-            area = EvaluationArea.objects.get(pk=data.get('area'))
 
             aspect = EvaluationAspect(
                 name=data.get('name'),
@@ -42,7 +41,7 @@ class EvaluationAspectViewSet(ModelViewSet):
                 very_good_option=data.get('very_good_option'),
                 type=data.get('type'),
                 related_melia_aspect=related_melia_aspect,
-                area=area,
+                area=request.user.area,
                 active=True)
             aspect.save()
 
