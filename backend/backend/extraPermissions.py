@@ -14,6 +14,9 @@ class IsEvaluatorFromArea(BasePermission):
 
     def has_permission(self, request, view):
         data = request.data
+        if isinstance(data, list):
+            return True
+
         area = data.get('area')
 
         user = request.user

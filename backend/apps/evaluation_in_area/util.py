@@ -1,3 +1,5 @@
+from typing import List
+
 from rest_framework import status
 from rest_framework.exceptions import ValidationError, ErrorDetail
 from rest_framework.request import Request
@@ -26,3 +28,11 @@ def handle_evaluation_area_validation_error(validation_error: ValidationError, r
             message = f'El cargo con id {request.data.get("boss_charge")} no existe'
 
         return Response({'detail': message}, status.HTTP_400_BAD_REQUEST)
+
+
+def find_aspect_with_id_in_list(aspect_id: int , aspect_dict_list: List[dict]):
+    for an_aspect in aspect_dict_list:
+        if an_aspect['id'] == aspect_id:
+            return an_aspect
+
+    return Exception(f'Not found aspect with id {aspect_id}')
