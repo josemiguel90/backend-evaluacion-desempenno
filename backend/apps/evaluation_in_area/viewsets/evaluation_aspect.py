@@ -93,20 +93,26 @@ class EvaluationAspectViewSet(ModelViewSet):
     @action(detail=False, url_path='change', methods=['POST'], permission_classes=[IsEvaluatorFromArea])
     def change_current_indicator_for_user(self, request):
 
-        aspects_to_update = self.get_objects_to_update(request)
-        new_aspects = self.create_new_aspects_instances(request)
-        aspects_to_delete = self.get_aspects_to_delete(request, aspects_to_update)
-
         try:
-            self.update_aspects(aspects_to_update, request)
+            aspects_to_update = self.get_objects_to_update(request)
+            new_aspects = self.create_new_aspects_instances(request)
+            aspects_to_delete = self.get_aspects_to_delete(request, aspects_to_update)
+
             # se deben eliminar los aspectos primero, ya que si se crean algunos primero,
             # los nuevos aspectos serán eliminados porque no están en la lista de los
             # aspectos actualizados
             self.delete_aspects(aspects_to_delete)
-            self.create_aspects(new_aspects, request)
+            self.update_aspects(aspects_to_update, request)
+            self.save_new_aspects(new_aspects)
+
+        except MeliaAspect.DoesNotExist:
+            return Response({'detail': 'El aspecto de Melia no se encontro'}, status.HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({'detail': f'El objeto no tiene el atributo {e.args[0]}'}, status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
-            raise e
-            # return Response(e.args[0], status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': str(e)}, status.HTTP_400_BAD_REQUEST)
 
         active_aspects = EvaluationAspect.objects.filter(area=request.user.area).filter(active=True)
         aspect_serializer = EvaluationAspectSerializer(data=active_aspects, many=True)
@@ -122,11 +128,23 @@ class EvaluationAspectViewSet(ModelViewSet):
         return user_aspect_queryset.filter(id__in=ids).all()
 
     @staticmethod
-    def create_new_aspects_instances(request) -> List[OrderedDict]:
-        aspects_without_ids = list(filter(lambda an_aspect: an_aspect['id'] is None, request.data))
-        aspect_serializer = EvaluationAspectSerializer(data=aspects_without_ids, many=True)
-        aspect_serializer.is_valid()
-        return aspect_serializer.validated_data
+    def create_new_aspects_instances(request) -> List[EvaluationAspect]:
+        aspects_without_ids = list(filter(lambda aspect: aspect['id'] is None, request.data))
+        aspect_instances = []
+
+        for an_aspect in aspects_without_ids:
+            melia_aspect = get_object_or_404(MeliaAspect, pk=an_aspect['related_melia_aspect'])
+            aspect_instances.append(
+                EvaluationAspect(name=an_aspect['name'],
+                                 bad_option=an_aspect['bad_option'],
+                                 regular_option=an_aspect['regular_option'],
+                                 good_option=an_aspect['good_option'],
+                                 very_good_option=an_aspect['very_good_option'],
+                                 related_melia_aspect=melia_aspect,
+                                 area=request.user.area,
+                                 active=True))
+
+        return aspect_instances
 
     @staticmethod
     def get_aspects_to_delete(request, aspects_to_update: List[EvaluationAspect]) -> List[EvaluationAspect]:
@@ -141,7 +159,7 @@ class EvaluationAspectViewSet(ModelViewSet):
         for an_aspect in aspects_to_update:
 
             updated_aspect = find_aspect_with_id_in_list(an_aspect.id, request.data)
-            melia_aspect = get_object_or_404(MeliaAspect, pk=updated_aspect['related_melia_aspect'])
+            melia_aspect = MeliaAspect.objects.get(pk=updated_aspect['related_melia_aspect'])
 
             an_aspect.name = updated_aspect['name']
             an_aspect.bad_option = updated_aspect['bad_option']
@@ -153,17 +171,9 @@ class EvaluationAspectViewSet(ModelViewSet):
             an_aspect.save()
 
     @staticmethod
-    def create_aspects(new_aspect_dicts: List[OrderedDict], request):
-        for a_new_aspect_dict in new_aspect_dicts:
-            area = request.user.area
-            EvaluationAspect(name=a_new_aspect_dict['name'],
-                             bad_option=a_new_aspect_dict['bad_option'],
-                             regular_option=a_new_aspect_dict['regular_option'],
-                             good_option=a_new_aspect_dict['good_option'],
-                             very_good_option=a_new_aspect_dict['very_good_option'],
-                             related_melia_aspect=a_new_aspect_dict['related_melia_aspect'],
-                             area=area,
-                             active=True).save()
+    def save_new_aspects(new_aspects: List[EvaluationAspect]):
+        for an_aspect in new_aspects:
+            an_aspect.save()
 
     @staticmethod
     def delete_aspects(aspects_to_delete: List[EvaluationAspect]):
