@@ -49,7 +49,7 @@ class EvaluationAspectViewSet(ModelViewSet):
             return Response(aspect_serializer.data, status.HTTP_201_CREATED)
 
         except MeliaAspect.DoesNotExist:
-            return Response({'detail': f'El parametro de Melia con id {data.get("related_melia_aspect")} no existe'},
+            return Response({'detail': f'El parametro de Meliá con id {data.get("related_melia_aspect")} no existe'},
                             status.HTTP_404_NOT_FOUND)
         except EvaluationArea.DoesNotExist:
             return Response({'detail': f'El Area de evaluacion con id {data.get("area")} no existe'},
@@ -87,7 +87,7 @@ class EvaluationAspectViewSet(ModelViewSet):
             return Response(aspect_serializer.data, status.HTTP_200_OK)
 
         except MeliaAspect.DoesNotExist:
-            return Response({'detail': f'No existe el indicador de Melia con el id {data.get("related_melia_aspect")}'},
+            return Response({'detail': f'No existe el indicador de Meliá con el id {data.get("related_melia_aspect")}'},
                             status.HTTP_404_NOT_FOUND)
 
     @action(detail=False, url_path='change', methods=['POST'], permission_classes=[IsEvaluatorFromArea])
@@ -99,14 +99,14 @@ class EvaluationAspectViewSet(ModelViewSet):
             aspects_to_delete = self.get_aspects_to_delete(request, aspects_to_update)
 
             # se deben eliminar los aspectos primero, ya que si se crean algunos primero,
-            # los nuevos aspectos ser�n eliminados porque no est�n en la lista de los
+            # los nuevos aspectos serán eliminados porque no están en la lista de los
             # aspectos actualizados
             self.delete_aspects(aspects_to_delete)
             self.update_aspects(aspects_to_update, request)
             self.save_new_aspects(new_aspects)
 
         except MeliaAspect.DoesNotExist:
-            return Response({'detail': 'El aspecto de Melia no se encontro'}, status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'El aspecto de Meliá no se encontró'}, status.HTTP_404_NOT_FOUND)
 
         except KeyError as e:
             return Response({'detail': f'El objeto no tiene el atributo {e.args[0]}'}, status.HTTP_400_BAD_REQUEST)
