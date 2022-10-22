@@ -3,7 +3,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from backend.extraPermissions import IsFoodAndDrinkBoss
+from backend.extraPermissions import IsEvaluatorFromArea
 from backend.utils import getOperatorErrorMessage, getEvaluatorNotExistError
 from .serializers import Worker, WorkerSerializer
 
@@ -16,7 +16,7 @@ from backend.utils import getNeedCatForWorkerError, getNeedCharForWorkerError
 class WorkerViewSet(viewsets.ModelViewSet):
     queryset = Worker.objects.all()
     serializer_class = WorkerSerializer
-    permission_classes = [IsAuthenticated, IsFoodAndDrinkBoss]
+    permission_classes = [IsAuthenticated, IsEvaluatorFromArea]
 
     @action(detail=False, methods=['POST'])
     def getWorkersByHotel(self, request):
@@ -27,7 +27,7 @@ class WorkerViewSet(viewsets.ModelViewSet):
                 raise Exception(getNeedCharForWorkerError())
             else:
                 hotel = Hotel.objects.get(pk=int(request.data))
-                hotels = hotel.workers.filter(activo=True).order_by('nombre')
+                hotels = hotel.workers.filter(activo=True, area_evaluacion=request.user.area).order_by('nombre')
                 serializer = WorkerSerializer(hotels, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -84,6 +84,7 @@ class WorkerViewSet(viewsets.ModelViewSet):
                     masDelete = True
                     op = w.operador
                 w.activo = False
+                w.area_evaluacion = None
                 w.save()
                 if masDelete:
                     op.delete()
@@ -119,6 +120,7 @@ class WorkerViewSet(viewsets.ModelViewSet):
             hotelId = int(request.data['hotelId'])
             workers = request.data['items']
             hotel = Hotel.objects.get(pk=hotelId)
+
             for worker in workers:
                 if Worker.objects.filter(no_interno=worker['no_interno']).exists():
                     w = Worker.objects.get(no_interno=worker['no_interno'])
@@ -129,6 +131,7 @@ class WorkerViewSet(viewsets.ModelViewSet):
                     w.cargo = Charge.objects.get(id_cargos=worker['cargo']['id_cargos'])
                     w.activo = True
                     w.unidad_org = hotel
+                    w.area_evaluacion = request.user.area
                     w.save()
                 else:
                     Worker.objects.create(
@@ -139,6 +142,7 @@ class WorkerViewSet(viewsets.ModelViewSet):
                         cat_ocup=OccupationalCategory.objects.get(id_categ=worker['cat_ocup']['id_categ']),
                         cargo=Charge.objects.get(id_cargos=worker['cargo']['id_cargos']),
                         activo=True,
+                        area_evaluacion=request.user.area,
                         unidad_org=hotel
                     )
             return Response({'Workers Imported Successfully'}, status=status.HTTP_200_OK)
