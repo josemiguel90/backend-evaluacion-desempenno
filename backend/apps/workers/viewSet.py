@@ -120,10 +120,18 @@ class WorkerViewSet(viewsets.ModelViewSet):
             hotelId = int(request.data['hotelId'])
             workers = request.data['items']
             hotel = Hotel.objects.get(pk=hotelId)
+            new_workers = []
 
             for worker in workers:
-                if Worker.objects.filter(no_interno=worker['no_interno']).exists():
+                does_worker_exist = Worker.objects.filter(no_interno=worker['no_interno']).exists()
+
+                if does_worker_exist:
+
                     w = Worker.objects.get(no_interno=worker['no_interno'])
+                    if w.area_evaluacion is not None:
+                        return Response(f'El trabajador con número de interno {w.no_interno} ya está asignado a un área',
+                                        status.HTTP_403_FORBIDDEN)
+
                     w.nombre = worker['nombre']
                     w.apell1 = worker['apell1']
                     w.apell2 = worker['apell2']
@@ -132,7 +140,7 @@ class WorkerViewSet(viewsets.ModelViewSet):
                     w.activo = True
                     w.unidad_org = hotel
                     w.area_evaluacion = request.user.area
-                    w.save()
+                    new_workers.append(w)
                 else:
                     Worker.objects.create(
                         no_interno=worker['no_interno'],
@@ -145,15 +153,31 @@ class WorkerViewSet(viewsets.ModelViewSet):
                         area_evaluacion=request.user.area,
                         unidad_org=hotel
                     )
+
+            for a_worker in new_workers:
+                a_worker.save()
             return Response({'Workers Imported Successfully'}, status=status.HTTP_200_OK)
+
         except OccupationalCategory.DoesNotExist:
             message = getNeedCatForWorkerError()
             return Response({'detail': message}, status=status.HTTP_400_BAD_REQUEST)
+
         except Charge.DoesNotExist:
             message = getNeedCharForWorkerError()
             return Response({'detail': message}, status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
             return Response({'detail': e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['GET'], url_path='internNumbersWorkersWithArea',
+            permission_classes=[IsEvaluatorFromArea])
+    def get_no_internos_que_tienen_area(self, request):
+        no_internos = []
+
+        for worker_without_area in Worker.objects.exclude(area_evaluacion=None):
+            no_internos.append(worker_without_area.no_interno)
+
+        return Response(no_internos, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['GET'])
     def getEvaluatorDetails(self, request):
