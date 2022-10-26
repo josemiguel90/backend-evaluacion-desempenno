@@ -3,14 +3,14 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .serializers import PayTime, PayTimeSerializer
-from backend.extraPermissions import IsFoodAndDrinkBoss
+from backend.extraPermissions import IsEvaluatorFromArea
 from backend.utils import getDateByStrig, getNoPaytimesList
 
 
 class PayTimeViewSet(viewsets.ModelViewSet):
     queryset = PayTime.objects.filter(isEliminated=False).order_by('-year', '-monthOrder')
     serializer_class = PayTimeSerializer
-    permission_classes = [IsAuthenticated, IsFoodAndDrinkBoss]
+    permission_classes = [IsAuthenticated, IsEvaluatorFromArea]
 
     def list(self, request):
         allowEmptyTable = request.query_params.get('allow')

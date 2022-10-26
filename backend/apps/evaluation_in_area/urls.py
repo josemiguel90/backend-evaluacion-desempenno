@@ -4,10 +4,13 @@ from apps.evaluation_in_area.viewsets.evaluation_aspect import EvaluationAspectV
 from apps.evaluation_in_area.viewsets.melia_aspect import MeliaAspectEditionDeletionView, MeliaAspectCreationView, \
     MeliaAspectListView, MeliaAspectRetrieveView
 from django.urls import path
+from apps.evaluation_in_area.viewsets.month_evaluation import MonthEvaluationViewSet
+
 
 router = routers.DefaultRouter()
 router.register('evaluation-area', EvaluationAreaViewSet)
 router.register('evaluation-aspect', EvaluationAspectViewSet)
+router.register('month-evaluation', MonthEvaluationViewSet)
 
 
 urlpatterns = [

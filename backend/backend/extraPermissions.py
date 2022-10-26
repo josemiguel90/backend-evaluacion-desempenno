@@ -1,5 +1,8 @@
 from rest_framework.permissions import BasePermission
 
+from apps.evaluation_in_area.models import EvaluationAspect
+from apps.workers.models import Worker
+
 
 class IsFoodAndDrinkBoss(BasePermission):
     """
@@ -21,4 +24,6 @@ class IsEvaluatorFromArea(BasePermission):
         return True
 
     def has_object_permission(self, request, view, obj):
-        return request.user.area == obj.area
+        if hasattr(obj, 'area'):
+            return request.user.area == obj.area
+        return True
