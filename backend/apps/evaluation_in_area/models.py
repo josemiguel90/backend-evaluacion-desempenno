@@ -46,7 +46,7 @@ class MonthEvaluation(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['evaluation_area', 'date', 'worker', 'evaluator', 'payment_period'],
+            models.UniqueConstraint(fields=['evaluation_area', 'worker', 'payment_period'],
                                     name='unique_month_evaluation')
         ]
 
