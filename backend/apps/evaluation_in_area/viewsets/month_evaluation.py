@@ -1,5 +1,7 @@
 import datetime
 from typing import List
+
+from django.views.generic import detail
 from rest_framework import status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
@@ -8,6 +10,7 @@ from rest_framework.viewsets import ViewSet
 from apps.evaluation_in_area.models import MonthEvaluation, MonthEvaluationAspectValue
 from apps.evaluation_in_area.serializers.month_evaluation import MonthEvaluationSerializer, \
     SimpleMonthEvaluationSerializer
+from apps.evaluation_in_area.util import find_aspect_with_id_in_list
 from apps.payTime.models import PayTime
 from apps.users.models import User
 from apps.workers.models import Worker
@@ -61,6 +64,20 @@ class MonthEvaluationViewSet(ViewSet):
 
 @api_view(['GET'])
 @permission_classes([IsEvaluatorFromArea])
+def get_month_evaluation_by_id(request, month_evaluation_id):
+    try:
+        evaluation = MonthEvaluation.objects.filter(evaluation_area=request.user.area).get(id=month_evaluation_id)
+        serializer = MonthEvaluationSerializer(evaluation)
+
+        return Response(serializer.data, status.HTTP_200_OK)
+
+    except MonthEvaluation.DoesNotExist:
+        return Response({'detail': f'La evaluación mensual con id {month_evaluation_id} no existe'},
+                        status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes([IsEvaluatorFromArea])
 def get_area_evaluation_given_worker_and_payment_period(request, payment_period_id, worker_intern_number):
 
     try:
@@ -108,3 +125,28 @@ def get_evaluations_in_area_and_payment_period(request, hotel_id, payment_period
     except PayTime.DoesNotExist:
         return Response({'detail': f'No existe el período de pago con id {payment_period_id}'},
                         status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['PUT'])
+@permission_classes([IsEvaluatorFromArea])
+def update_month_evaluation(request, month_evaluation_id: int):
+    updated_aspects_with_values: list = request.data
+
+    try:
+        month_evaluation = MonthEvaluation.objects.filter(evaluation_area=request.user.area)\
+            .get(id=month_evaluation_id)
+
+        month_evaluation_aspect_values = MonthEvaluationAspectValue.objects.filter(month_evaluation=month_evaluation_id)
+
+        for a_month_evaluation_aspect_value in month_evaluation_aspect_values:
+            updated_aspect_from_request = find_aspect_with_id_in_list(a_month_evaluation_aspect_value.aspect_id,
+                                                                      updated_aspects_with_values)
+            a_month_evaluation_aspect_value.assigned_value = updated_aspect_from_request['value']
+            a_month_evaluation_aspect_value.save()
+
+        serializer = MonthEvaluationSerializer(month_evaluation)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except MonthEvaluation.DoesNotExist:
+        return Response({'detail': f'La evaluación mensual con id {month_evaluation_id} no existe'})
