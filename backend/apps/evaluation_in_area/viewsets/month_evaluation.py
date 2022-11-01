@@ -150,3 +150,28 @@ def update_month_evaluation(request, month_evaluation_id: int):
 
     except MonthEvaluation.DoesNotExist:
         return Response({'detail': f'La evaluación mensual con id {month_evaluation_id} no existe'})
+
+
+@api_view(['DELETE'])
+@permission_classes([IsEvaluatorFromArea])
+def undo_month_area_evaluation(request, month_evaluation_id):
+    try:
+        month_evaluation = MonthEvaluation.objects.filter(evaluation_area=request.user.area)\
+            .filter(are_evaluated_aspects_deleted=False).get(id=month_evaluation_id)
+
+        MonthEvaluationAspectValue.objects.filter(month_evaluation=month_evaluation)\
+            .delete()
+
+        month_evaluation.are_evaluated_aspects_deleted = True
+        month_evaluation.save()
+
+        # Si ya estaba eliminada la evaluación de Meliá, entonces eliminar el objeto
+        # de la base de datos
+        if month_evaluation.are_evaluated_melia_aspects_deleted:
+            month_evaluation.delete()
+
+        return Response(status=status.HTTP_200_OK)
+
+    except MonthEvaluation.DoesNotExist:
+        return Response({'detail': f'La evaluación mensual con id {month_evaluation_id} no existe'},
+                        status.HTTP_404_NOT_FOUND)

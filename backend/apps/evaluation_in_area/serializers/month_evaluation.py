@@ -45,6 +45,10 @@ class SimpleMonthEvaluationSerializer(MonthEvaluationSerializer):
     def get_final_note(self, obj):
         valued_aspects = MonthEvaluationAspectValue.objects.filter(month_evaluation=obj)
         values_in_evaluation = valued_aspects.values_list('assigned_value', flat=True)
+
+        if len(values_in_evaluation) == 0:
+            return None
+
         mean_evaluation_value = statistics.mean(values_in_evaluation)
 
         if 2 <= mean_evaluation_value < 3:
