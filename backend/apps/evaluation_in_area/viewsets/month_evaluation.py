@@ -10,7 +10,8 @@ from rest_framework.viewsets import ViewSet
 from apps.evaluation_in_area.models import MonthEvaluation, MonthEvaluationAspectValue
 from apps.evaluation_in_area.serializers.month_evaluation import MonthEvaluationSerializer, \
     SimpleMonthEvaluationSerializer
-from apps.evaluation_in_area.util import find_aspect_with_id_in_list
+from apps.evaluation_in_area.util import find_aspect_with_id_in_list, \
+    find_month_evaluation_for_worker_and_payment_period
 from apps.payTime.models import PayTime
 from apps.users.models import User
 from apps.workers.models import Worker
@@ -33,13 +34,26 @@ class MonthEvaluationViewSet(ViewSet):
             evaluator: User = request.user
             payment_period = PayTime.objects.get(id=payment_period_id)
 
-            month_evaluation = MonthEvaluation(evaluation_area=request.user.area,
-                                               date=datetime.date.today(),
-                                               worker=worker,
-                                               worker_charge=worker.cargo,
-                                               evaluator=f'{evaluator.first_name} {evaluator.last_name}',
-                                               evaluator_charge=evaluator.area.boss_charge,
-                                               payment_period=payment_period)
+            # La evaluación podía existir desde antes en la base de datos
+            # si no había sido eliminada completamente
+            month_evaluation = find_month_evaluation_for_worker_and_payment_period(
+                request.user, worker, payment_period)
+
+            if month_evaluation is None:
+                month_evaluation = MonthEvaluation(evaluation_area=request.user.area,
+                                                   date=datetime.date.today(),
+                                                   worker=worker,
+                                                   worker_charge=worker.cargo,
+                                                   evaluator=f'{evaluator.first_name} {evaluator.last_name}',
+                                                   evaluator_charge=evaluator.area.boss_charge,
+                                                   payment_period=payment_period)
+            else:
+                month_evaluation.are_evaluated_aspects_deleted = False
+                month_evaluation.date = datetime.date.today()
+                month_evaluation.worker_charge = worker.cargo
+                month_evaluation.evaluator = f'{evaluator.first_name} {evaluator.last_name}'
+                month_evaluation.evaluator_charge = evaluator.area.boss_charge
+
             month_evaluation.save()
 
             for an_evaluation in evaluations:

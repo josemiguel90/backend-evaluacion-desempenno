@@ -6,6 +6,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.utils.serializer_helpers import ReturnDict
 
+from apps.evaluation_in_area.models import MonthEvaluation
+
 
 def handle_evaluation_area_validation_error(validation_error: ValidationError, request: Request) -> Response:
     error_dict: ReturnDict = validation_error.args[0]
@@ -36,3 +38,14 @@ def find_aspect_with_id_in_list(aspect_id: int, aspect_dict_list: List[dict]):
             return an_aspect
 
     raise Exception(f'Not found aspect with id {aspect_id}')
+
+
+def find_month_evaluation_for_worker_and_payment_period(user, worker, payment_period):
+    try:
+        return MonthEvaluation.objects.get(
+            evaluation_area=user.area,
+            worker=worker,
+            payment_period=payment_period)
+
+    except MonthEvaluation.DoesNotExist:
+        return None
