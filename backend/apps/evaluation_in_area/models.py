@@ -40,6 +40,7 @@ class EvaluationAspect(models.Model):
 class MeliaAspect(models.Model):
 
     name = models.CharField(max_length=80, null=False)
+    is_active = models.BooleanField(default=True)
 
 
 class MonthEvaluation(models.Model):

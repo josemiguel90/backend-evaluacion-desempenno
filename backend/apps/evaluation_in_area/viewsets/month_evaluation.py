@@ -1,4 +1,5 @@
 import datetime
+from statistics import mean
 from typing import List
 
 from django.views.generic import detail
@@ -7,7 +8,8 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
-from apps.evaluation_in_area.models import MonthEvaluation, MonthEvaluationAspectValue
+from apps.evaluation_in_area.models import MonthEvaluation, MonthEvaluationAspectValue, MeliaAspect, EvaluationAspect, \
+    MeliaMonthEvaluationAspectValue
 from apps.evaluation_in_area.serializers.month_evaluation import MonthEvaluationSerializer, \
     SimpleMonthEvaluationSerializer
 from apps.evaluation_in_area.util import find_aspect_with_id_in_list, \
@@ -61,6 +63,25 @@ class MonthEvaluationViewSet(ViewSet):
                                                                  aspect_id=an_evaluation['id'],
                                                                  assigned_value=an_evaluation['value'])
                 an_evaluated_aspect.save()
+
+            # Derivar la evaluación mensual de Meliá
+            aspect_ids = list(map(lambda an_evaluation: an_evaluation['id'], evaluations))
+            area_aspects_used_in_this_evaluation = EvaluationAspect.objects.filter(id__in=aspect_ids)
+
+            for a_melia_aspect in MeliaAspect.objects.filter(is_active=True):
+                area_aspects_related_to_a_melia_aspect = area_aspects_used_in_this_evaluation\
+                    .filter(related_melia_aspect=a_melia_aspect)
+
+                related_aspects_ids = area_aspects_related_to_a_melia_aspect.values_list('id', flat=True)
+
+                assigned_values = [an_evaluation['value'] for an_evaluation in evaluations
+                                   if an_evaluation['id'] in related_aspects_ids]
+
+                value_for_melia_aspect = round(mean(assigned_values))
+                MeliaMonthEvaluationAspectValue(
+                    month_evaluation=month_evaluation,
+                    melia_aspect=a_melia_aspect,
+                    assigned_value=value_for_melia_aspect).save()
 
             return Response(status=status.HTTP_200_OK)
 
