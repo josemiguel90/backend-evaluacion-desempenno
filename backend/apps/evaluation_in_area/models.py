@@ -60,10 +60,8 @@ class MonthEvaluation(models.Model):
     payment_period = models.ForeignKey(to=PayTime, on_delete=models.PROTECT)
     evaluated_aspect = models.ManyToManyField(EvaluationAspect, through='MonthEvaluationAspectValue',
                                               through_fields=['month_evaluation', 'aspect'])
-    are_evaluated_aspects_deleted = models.BooleanField(default=True)
     evaluated_melia_aspect = models.ManyToManyField(MeliaAspect, through='MeliaMonthEvaluationAspectValue',
                                                     through_fields=['month_evaluation', 'melia_aspect'])
-    are_evaluated_melia_aspects_deleted = models.BooleanField(default=False)
 
 
 class MonthEvaluationAspectValue(models.Model):

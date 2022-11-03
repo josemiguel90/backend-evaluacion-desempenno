@@ -22,8 +22,7 @@ class MonthEvaluationSerializer(serializers.ModelSerializer):
     class Meta:
         model = MonthEvaluation
         fields = ['id', 'date', 'evaluation_area', 'worker', 'worker_charge', 'evaluator', 'evaluator_charge',
-                  'payment_period', 'aspects_with_value', 'are_evaluated_aspects_deleted',
-                  'are_evaluated_melia_aspects_deleted']
+                  'payment_period', 'aspects_with_value']
 
     def get_aspects_with_value(self, obj):
         valued_aspects = MonthEvaluationAspectValue.objects.filter(month_evaluation=obj)

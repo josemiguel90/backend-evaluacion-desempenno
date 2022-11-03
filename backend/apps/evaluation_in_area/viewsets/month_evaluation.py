@@ -36,28 +36,16 @@ class MonthEvaluationViewSet(ViewSet):
             evaluator: User = request.user
             payment_period = PayTime.objects.get(id=payment_period_id)
 
-            # La evaluación podía existir desde antes en la base de datos
-            # si no había sido eliminada completamente
-            month_evaluation = find_month_evaluation_for_worker_and_payment_period(
-                request.user, worker, payment_period)
-
-            if month_evaluation is None:
-                month_evaluation = MonthEvaluation(evaluation_area=request.user.area,
-                                                   date=datetime.date.today(),
-                                                   worker=worker,
-                                                   worker_charge=worker.cargo,
-                                                   evaluator=f'{evaluator.first_name} {evaluator.last_name}',
-                                                   evaluator_charge=evaluator.area.boss_charge,
-                                                   payment_period=payment_period)
-            else:
-                month_evaluation.are_evaluated_aspects_deleted = False
-                month_evaluation.date = datetime.date.today()
-                month_evaluation.worker_charge = worker.cargo
-                month_evaluation.evaluator = f'{evaluator.first_name} {evaluator.last_name}'
-                month_evaluation.evaluator_charge = evaluator.area.boss_charge
-
+            month_evaluation = MonthEvaluation(evaluation_area=request.user.area,
+                                               date=datetime.date.today(),
+                                               worker=worker,
+                                               worker_charge=worker.cargo,
+                                               evaluator=f'{evaluator.first_name} {evaluator.last_name}',
+                                               evaluator_charge=evaluator.area.boss_charge,
+                                               payment_period=payment_period)
             month_evaluation.save()
 
+            # Dar puntuaciones a la evaluación mensual del área
             for an_evaluation in evaluations:
                 an_evaluated_aspect = MonthEvaluationAspectValue(month_evaluation=month_evaluation,
                                                                  aspect_id=an_evaluation['id'],
@@ -69,7 +57,7 @@ class MonthEvaluationViewSet(ViewSet):
             area_aspects_used_in_this_evaluation = EvaluationAspect.objects.filter(id__in=aspect_ids)
 
             for a_melia_aspect in MeliaAspect.objects.filter(is_active=True):
-                area_aspects_related_to_a_melia_aspect = area_aspects_used_in_this_evaluation\
+                area_aspects_related_to_a_melia_aspect = area_aspects_used_in_this_evaluation \
                     .filter(related_melia_aspect=a_melia_aspect)
 
                 related_aspects_ids = area_aspects_related_to_a_melia_aspect.values_list('id', flat=True)
@@ -192,18 +180,11 @@ def update_month_evaluation(request, month_evaluation_id: int):
 def undo_month_area_evaluation(request, month_evaluation_id):
     try:
         month_evaluation = MonthEvaluation.objects.filter(evaluation_area=request.user.area)\
-            .filter(are_evaluated_aspects_deleted=False).get(id=month_evaluation_id)
+            .get(id=month_evaluation_id)
 
-        MonthEvaluationAspectValue.objects.filter(month_evaluation=month_evaluation)\
-            .delete()
-
-        month_evaluation.are_evaluated_aspects_deleted = True
-        month_evaluation.save()
-
-        # Si ya estaba eliminada la evaluación de Meliá, entonces eliminar el objeto
-        # de la base de datos
-        if month_evaluation.are_evaluated_melia_aspects_deleted:
-            month_evaluation.delete()
+        # Se eliminarán los valores otorgados a los aspectos de la evaluación
+        # mensual y los de meliá
+        month_evaluation.delete()
 
         return Response(status=status.HTTP_200_OK)
 
