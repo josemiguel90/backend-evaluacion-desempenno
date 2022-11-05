@@ -175,6 +175,31 @@ def update_month_evaluation(request, month_evaluation_id: int):
         return Response({'detail': f'La evaluación mensual con id {month_evaluation_id} no existe'})
 
 
+@api_view(['PUT'])
+@permission_classes([IsEvaluatorFromArea])
+def update_melia_values_month_evaluation(request, month_evaluation_id):
+    updated_melia_aspects_with_value: list = request.data
+
+    try:
+        month_evaluation = MonthEvaluation.objects.filter(evaluation_area=request.user.area) \
+            .get(id=month_evaluation_id)
+        melia_aspects_with_old_values = MeliaMonthEvaluationAspectValue.objects \
+            .filter(month_evaluation=month_evaluation)
+
+        for a_melia_aspect_with_value in melia_aspects_with_old_values:
+            melia_aspect_with_new_value = find_aspect_with_id_in_list(a_melia_aspect_with_value.melia_aspect.id,
+                                                                      updated_melia_aspects_with_value)
+            a_melia_aspect_with_value.assigned_value = melia_aspect_with_new_value['value']
+            a_melia_aspect_with_value.save()
+
+        serializer = MonthEvaluationSerializer(month_evaluation)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except MonthEvaluation.DoesNotExist:
+        return Response({'detail': f'La evaluación mensual con id {month_evaluation_id} no existe'},
+                        status.HTTP_404_NOT_FOUND)
+
+
 @api_view(['DELETE'])
 @permission_classes([IsEvaluatorFromArea])
 def undo_month_area_evaluation(request, month_evaluation_id):
