@@ -41,6 +41,7 @@ class MeliaAspect(models.Model):
 
     name = models.CharField(max_length=80, null=False)
     is_active = models.BooleanField(default=True)
+    order = models.IntegerField(null=False)
 
 
 class MonthEvaluation(models.Model):

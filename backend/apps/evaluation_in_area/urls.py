@@ -1,8 +1,7 @@
 from rest_framework import routers
 from apps.evaluation_in_area.viewsets.evaluation_area import EvaluationAreaViewSet
 from apps.evaluation_in_area.viewsets.evaluation_aspect import EvaluationAspectViewSet
-from apps.evaluation_in_area.viewsets.melia_aspect import MeliaAspectEditionDeletionView, MeliaAspectCreationView, \
-    MeliaAspectListView, MeliaAspectRetrieveView
+from apps.evaluation_in_area.viewsets.melia_aspect import MeliaAspectListView, MeliaAspectRetrieveView
 from django.urls import path
 from apps.evaluation_in_area.viewsets.month_evaluation import MonthEvaluationViewSet, \
     get_area_evaluation_given_worker_and_payment_period, get_evaluations_in_area_and_payment_period, \
@@ -16,8 +15,6 @@ router.register('month-evaluation', MonthEvaluationViewSet)
 
 
 urlpatterns = [
-    path('melia-aspect/<int:pk>/', MeliaAspectEditionDeletionView.as_view()),
-    path('melia-aspect/', MeliaAspectCreationView.as_view()),
     path('melia-aspect', MeliaAspectListView.as_view()),
     path('melia-aspect/<int:pk>', MeliaAspectRetrieveView.as_view()),
 
