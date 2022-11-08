@@ -63,6 +63,7 @@ class MonthEvaluation(models.Model):
                                               through_fields=['month_evaluation', 'aspect'])
     evaluated_melia_aspect = models.ManyToManyField(MeliaAspect, through='MeliaMonthEvaluationAspectValue',
                                                     through_fields=['month_evaluation', 'melia_aspect'])
+    melia_observations = models.CharField(max_length=500, default='')
 
 
 class MonthEvaluationAspectValue(models.Model):
@@ -76,13 +77,6 @@ class MonthEvaluationAspectValue(models.Model):
     month_evaluation = models.ForeignKey(to=MonthEvaluation, on_delete=models.CASCADE)
     aspect = models.ForeignKey(to=EvaluationAspect, on_delete=models.CASCADE)
     assigned_value = models.IntegerField(validators=[MinValueValidator(2), MaxValueValidator(5)])
-
-
-class MeliaMonthEvaluationObservation(models.Model):
-
-    id = models.OneToOneField(MonthEvaluation, on_delete=models.CASCADE, related_name='melia_observation',
-                              primary_key=True)
-    observations = models.CharField(max_length=300, null=True)
 
 
 class MeliaMonthEvaluationAspectValue(models.Model):

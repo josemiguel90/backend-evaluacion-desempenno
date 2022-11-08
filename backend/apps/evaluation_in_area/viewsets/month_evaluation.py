@@ -177,12 +177,16 @@ def update_month_evaluation(request, month_evaluation_id: int):
 
 @api_view(['PUT'])
 @permission_classes([IsEvaluatorFromArea])
-def update_melia_values_month_evaluation(request, month_evaluation_id):
-    updated_melia_aspects_with_value: list = request.data
+def update_melia_values_and_observations_month_evaluation(request, month_evaluation_id):
+    updated_melia_aspects_with_value: list = request.data['aspectsWithValue']
+
 
     try:
         month_evaluation = MonthEvaluation.objects.filter(evaluation_area=request.user.area) \
             .get(id=month_evaluation_id)
+        month_evaluation.melia_observations = request.data['observations']
+        month_evaluation.save()
+
         melia_aspects_with_old_values = MeliaMonthEvaluationAspectValue.objects \
             .filter(month_evaluation=month_evaluation)
 
