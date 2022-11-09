@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from backend import utils
+from ..models import User
 from ..serializers.userSerializer import UserSerializer, UserMiniSerializer, UserSerializerWithToken
 from ...evaluation_in_area.models import EvaluationArea
 
@@ -55,7 +56,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({'detail': f'El área con id {data.get("area")} no existe'}, status.HTTP_404_NOT_FOUND)
 
         try:
-            get_user_model().objects.create_user(
+            User(
                 username=data.get('username'),
                 first_name=data.get('first_name'),
                 last_name=data.get('last_name'),
@@ -63,7 +64,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 is_staff=data.get('isAdmin'),
                 password=make_password(data.get('password')),
                 area=evaluation_area
-            )
+            ).save()
             return Response({'Users Created Successfully'}, status=status.HTTP_200_OK)
         except IntegrityError as e:
             print(e.args)
