@@ -170,7 +170,7 @@ class WorkerViewSet(viewsets.ModelViewSet):
             return Response({'detail': e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['GET'], url_path='internNumbersWorkersWithArea',
-            permission_classes=[IsEvaluatorFromArea])
+            permission_classes=[IsAuthenticated, IsEvaluatorFromArea])
     def get_no_internos_que_tienen_area(self, request):
         no_internos = []
 

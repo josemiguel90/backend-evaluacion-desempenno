@@ -1,8 +1,11 @@
+from enum import unique
+
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager,\
     PermissionsMixin
 
 from apps.evaluation_in_area.models import EvaluationArea
+from apps.workers.models import Worker
 
 
 class UserManager(BaseUserManager):
@@ -34,6 +37,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(auto_now=True)
+    worker = models.OneToOneField(to=Worker, on_delete=models.RESTRICT, null=True)
 
     # ROLS
     is_staff = models.BooleanField(default=False)

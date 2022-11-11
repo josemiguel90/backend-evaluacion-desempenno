@@ -19,11 +19,14 @@ class IsEvaluatorFromArea(BasePermission):
 
         user = request.user
 
+        if user.is_staff: return True
+
         if user.is_anonymous or user.area is None:
             return False
         return True
 
     def has_object_permission(self, request, view, obj):
+
         if hasattr(obj, 'area'):
             return request.user.area == obj.area
         return True
