@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from backend import utils
 from ..models import User
 from ..serializers.userSerializer import UserSerializer, UserMiniSerializer, UserSerializerWithToken
+from ..util import check_user_unique_fields
 from ...category.models import OccupationalCategory
 from ...charge.models import Charge
 from ...evaluation_in_area.models import EvaluationArea
@@ -56,7 +57,7 @@ class UserViewSet(viewsets.ModelViewSet):
         evaluation_area = None
         worker = None
 
-        bad_request_response = self.check_user_unique_fields(data)
+        bad_request_response = check_user_unique_fields(data)
         if bad_request_response:
             return bad_request_response
 
@@ -105,20 +106,6 @@ class UserViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'detail': e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
 
-    def check_user_unique_fields(self, data, user_id=None):
-        username = data.get('username')
-
-        other_users = User.objects.exclude(id=user_id)
-
-        if other_users.filter(username=data.get('username')).count() > 0:
-            return Response({'detail': f'Ya existe un usuario con Nombre de Usuario \'{username}\''},
-                               status.HTTP_400_BAD_REQUEST)
-
-        email = data.get('email')
-        if other_users.filter(email=data.get('email')).count() > 0:
-            return Response({'detail': f'Ya existe un usuario con el email \'{email}\''},
-                               status.HTTP_400_BAD_REQUEST)
-
     def get_worker_instance(self, worker_from_request, evaluation_area):
         found_worker = Worker.objects.filter(
             no_interno=worker_from_request['no_interno']).first()
@@ -161,7 +148,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Un usuario no puede ser evaluador y administrador del sistema al mismo tiempo'},
                             status.HTTP_400_BAD_REQUEST)
 
-        bad_request_response = self.check_user_unique_fields(data, user.id)
+        bad_request_response = check_user_unique_fields(data, user.id)
         if bad_request_response:
             return bad_request_response
 
@@ -226,6 +213,11 @@ def getAuthenticatedUserProfile(request):
 def updateUserProfile(request):
     user = request.user
     data = request.data
+
+    bad_request_response = check_user_unique_fields(data, user.id)
+    if bad_request_response:
+        return bad_request_response
+
     try:
         user.username = data.get('username')
         user.first_name = data.get('first_name')
@@ -233,9 +225,7 @@ def updateUserProfile(request):
         user.email = data.get('email')
         user.save()
         return Response(UserSerializerWithToken(user, many=False).data, status=status.HTTP_200_OK)
-    except IntegrityError:
-        message = 'Ya existe un usuario con el nombre de usuario {}'.format(data['username'])
-        return Response({'detail': message}, status=status.HTTP_400_BAD_REQUEST)
+
     except Exception as e:
         return Response({'detail': e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
 
