@@ -1,10 +1,8 @@
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import Permission
 from django.db import IntegrityError
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
@@ -58,9 +56,9 @@ class UserViewSet(viewsets.ModelViewSet):
         evaluation_area = None
         worker = None
 
-        exception_response = self.check_unique_fields(data)
-        if exception_response:
-            return exception_response
+        bad_request_response = self.check_user_unique_fields(data)
+        if bad_request_response:
+            return bad_request_response
 
         if data.get('isAdmin') and data.get('area'):
             return Response({'detail': 'Un usuario no puede ser evaluador y administrador del sistema al mismo tiempo'},
@@ -107,14 +105,17 @@ class UserViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'detail': e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
 
-    def check_unique_fields(self, data):
+    def check_user_unique_fields(self, data, user_id=None):
         username = data.get('username')
-        if User.objects.filter(username=data.get('username')).count() > 0:
+
+        other_users = User.objects.exclude(id=user_id)
+
+        if other_users.filter(username=data.get('username')).count() > 0:
             return Response({'detail': f'Ya existe un usuario con Nombre de Usuario \'{username}\''},
                                status.HTTP_400_BAD_REQUEST)
 
         email = data.get('email')
-        if User.objects.filter(email=data.get('email')).count() > 0:
+        if other_users.filter(email=data.get('email')).count() > 0:
             return Response({'detail': f'Ya existe un usuario con el email \'{email}\''},
                                status.HTTP_400_BAD_REQUEST)
 
@@ -129,39 +130,42 @@ class UserViewSet(viewsets.ModelViewSet):
 
         charge = Charge.objects.get(pk=worker_from_request['cargo']['id_cargos'])
 
-        if found_worker is None:
-            return Worker(no_interno=worker_from_request['no_interno'],
-                          nombre=worker_from_request['nombre'],
-                          apell1=worker_from_request['apell1'],
-                          apell2=worker_from_request['apell2'],
-                          unidad_org=hotel,
-                          cat_ocup=occupational_category,
-                          cargo=charge,
-                          activo=worker_from_request['activo'],
-                          area_evaluacion=evaluation_area)
+        if found_worker:
+            found_worker.nombre = worker_from_request['nombre']
+            found_worker.apell1 = worker_from_request['apell1']
+            found_worker.apell2 = worker_from_request['apell2']
+            found_worker.unidad_org = hotel
+            found_worker.cat_ocup = occupational_category
+            found_worker.cargo = Charge.objects.get(id_cargos=worker_from_request['cargo']['id_cargos'])
+            found_worker.activo = worker_from_request['activo']
+            found_worker.area_evaluacion = evaluation_area
+            return found_worker
 
-        found_worker.nombre = worker_from_request['nombre']
-        found_worker.apell1 = worker_from_request['apell1']
-        found_worker.apell2 = worker_from_request['apell2']
-        found_worker.unidad_org = hotel
-        found_worker.cat_ocup = occupational_category
-        found_worker.cargo = Charge.objects.get(id_cargos=worker_from_request['cargo']['id_cargos'])
-        found_worker.activo = worker_from_request['activo']
-        found_worker.area_evaluacion = evaluation_area
-        return found_worker
+        return Worker(no_interno=worker_from_request['no_interno'],
+                      nombre=worker_from_request['nombre'],
+                      apell1=worker_from_request['apell1'],
+                      apell2=worker_from_request['apell2'],
+                      unidad_org=hotel,
+                      cat_ocup=occupational_category,
+                      cargo=charge,
+                      activo=worker_from_request['activo'],
+                      area_evaluacion=evaluation_area)
 
     def update(self, request, *args, **kwargs):
-        """ Get data from frontend """
         data = request.data
         evaluation_area_id = data.get('area')
-        evaluation_area = None
+        new_worker = None
+        user = self.get_object()
 
-        if data.get('isAdmin') and data.get('area'):
+        if data.get('isAdmin') and data.get('area') and data.get('worker'):
             return Response({'detail': 'Un usuario no puede ser evaluador y administrador del sistema al mismo tiempo'},
                             status.HTTP_400_BAD_REQUEST)
 
+        bad_request_response = self.check_user_unique_fields(data, user.id)
+        if bad_request_response:
+            return bad_request_response
+
         try:
-            user = self.get_object()
             """ Validate only an Admin user """
             onlyOneAdmin = get_user_model().objects.filter(is_staff=True).count() == 1
             if user.is_staff and not data.get('isAdmin') and onlyOneAdmin:
@@ -170,13 +174,28 @@ class UserViewSet(viewsets.ModelViewSet):
             # get evaluation area
             evaluation_area = EvaluationArea.objects.get(pk=evaluation_area_id) if evaluation_area_id else None
 
+            # Desvincular al trabajador del área con la que estaba asociado
+            if user.worker:
+                old_worker = user.worker
+                old_worker.area_evaluacion = None
+                old_worker.save()
+
+            if data.get('worker'):
+                new_worker = self.get_worker_instance(data.get('worker'), evaluation_area)
+                new_worker.save()
+
+            first_name = new_worker.nombre.title() if new_worker else data.get('first_name')
+
+            last_name = f'{new_worker.apell1} {new_worker.apell2}' if new_worker else data.get('last_name')
+
             """ Edit User Fields """
             user.username = data.get('username')
-            user.first_name = data.get('first_name')
-            user.last_name = data.get('last_name')
+            user.first_name = first_name
+            user.last_name = last_name
             user.email = data.get('email')
             user.is_staff = data.get('isAdmin')
             user.area = evaluation_area
+            user.worker = new_worker
 
             user.save()
 
@@ -186,16 +205,6 @@ class UserViewSet(viewsets.ModelViewSet):
         except EvaluationArea.DoesNotExist:
             return Response({'detail': f'El área de evaluación con id {evaluation_area_id} no existe'},
                             status.HTTP_404_NOT_FOUND)
-
-        except IntegrityError as e:
-            message = 'Ya existe un usuario con el nombre de usuario {}'.format(data['username'])
-
-            if 'area_id' in e.args[0]:
-                message = f'El área {evaluation_area.name} ya fue asignada'
-            elif 'email' in e.args[0]:
-                message = f'Ya existe un usuario con el email {data.get("email")}'
-
-            return Response({'detail': message}, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
             return Response({'detail': e.args[0]}, status=status.HTTP_400_BAD_REQUEST)

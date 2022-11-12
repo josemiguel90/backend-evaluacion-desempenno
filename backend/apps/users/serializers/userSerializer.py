@@ -3,6 +3,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import serializers
 
 from apps.evaluation_in_area.serializers.evaluation_area import EvaluationAreaSerializer
+from apps.users.models import User
+from apps.workers.serializers import WorkerSerializer
 
 
 class UserMiniSerializer(serializers.ModelSerializer):
@@ -10,10 +12,12 @@ class UserMiniSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField(read_only=True)
     email = serializers.SerializerMethodField(read_only=True)
     rol = serializers.SerializerMethodField(read_only=True)
+    area = EvaluationAreaSerializer(read_only=True)
+    worker = WorkerSerializer(read_only=True)
 
     class Meta:
-        model = get_user_model()
-        fields = ['id', 'username', 'name', 'email', 'rol', 'isAdmin', 'area']
+        model = User
+        fields = ['id', 'username', 'name', 'email', 'rol', 'isAdmin', 'area', 'worker']
         extra_kwargs = {'password': {'write_only': True, 'required': True}}
 
     def get_isAdmin(self, obj):
@@ -35,13 +39,19 @@ class UserMiniSerializer(serializers.ModelSerializer):
 
         return 'Usuario normal'
 
+    def get_worker(self, obj):
+        if obj.worker:
+            return WorkerSerializer(obj.worker).data
+        return None
 
 class UserSerializer(UserMiniSerializer):
     permissions = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = get_user_model()
-        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'rol', 'isAdmin', 'date_joined', 'last_login', 'permissions', 'area']
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'rol',
+                  'isAdmin', 'date_joined', 'last_login', 'permissions', 'area',
+                  'worker']
 
     def get_permissions(self, obj):
         permissions = obj.get_user_permissions()
@@ -54,7 +64,7 @@ class UserSerializerWithToken(UserSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ['id', 'username', 'email', 'name', 'isAdmin', 'rol', 'token', 'area']
+        fields = ['id', 'username', 'email', 'name', 'isAdmin', 'rol', 'token', 'area', 'worker']
 
     def get_token(self, obj):
         token = RefreshToken.for_user(obj)
