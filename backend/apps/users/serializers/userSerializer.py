@@ -24,6 +24,10 @@ class UserMiniSerializer(serializers.ModelSerializer):
         return obj.is_staff
 
     def get_name(self, obj):
+        if obj.worker:
+            return obj.worker.nombreCompleto()
+
+        # Eset es el nombre de un usuario administrador
         return obj.get_full_name()
 
     def get_email(self, obj):
