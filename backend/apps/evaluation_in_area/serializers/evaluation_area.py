@@ -8,7 +8,7 @@ class EvaluationAreaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EvaluationArea
-        fields = ['id', 'name', 'boss_charge', 'charge_description']
+        fields = ['id', 'name', 'boss_charge', 'charge_description', 'type']
 
     def get_charge_description(self, obj):
         return obj.boss_charge.descripcion.title()

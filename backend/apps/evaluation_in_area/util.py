@@ -6,7 +6,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.utils.serializer_helpers import ReturnDict
 
-from apps.evaluation_in_area.models import MonthEvaluation
+from apps.evaluation_in_area.models import MonthEvaluation, EvaluationArea
 
 
 def handle_evaluation_area_validation_error(validation_error: ValidationError, request: Request) -> Response:
@@ -17,7 +17,13 @@ def handle_evaluation_area_validation_error(validation_error: ValidationError, r
         error: ErrorDetail = error_list[0]
         message = f'{field}: {repr(error)}'
 
-        if field == 'name' and error.code == 'unique':
+        if field == 'type' and error.code == 'unique':
+            area_type = request.data.get('type')
+            area_type_name = 'Gastronomía' if area_type == EvaluationArea.GASTRONOMY_TYPE \
+                else 'Ama de Llaves'
+            message = f'Ya existe un área del tipo {area_type_name}'
+
+        elif field == 'name' and error.code == 'unique':
             message = 'Ya existe un departamento con este nombre'
         elif field == 'name' and error.code == 'null':
             message = 'El nombre no puede ser nulo'

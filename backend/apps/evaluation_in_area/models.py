@@ -10,8 +10,17 @@ from ..workers.models import Worker
 
 class EvaluationArea(models.Model):
 
+    GASTRONOMY_TYPE = 'gastronomy'
+    HOUSEKEEPER_TYPE = 'housekeeper'
+
     name = models.CharField(max_length=80, null=False, unique=True)
     boss_charge = models.ForeignKey(Charge, on_delete=models.PROTECT, null=False)
+    type = models.CharField(choices=((GASTRONOMY_TYPE, GASTRONOMY_TYPE),
+                                     (HOUSEKEEPER_TYPE, HOUSEKEEPER_TYPE)),
+                            unique=True,
+                            null=True,
+                            default=None,
+                            max_length=30)
 
 
 class EvaluationAspect(models.Model):
