@@ -1,8 +1,13 @@
+from typing import List
+
 from rest_framework import status
 from rest_framework.exceptions import ValidationError, ErrorDetail
 from rest_framework.response import Response
 from rest_framework.utils.serializer_helpers import ReturnDict
 from rest_framework.viewsets import ModelViewSet
+
+from apps.charge.models import Charge
+from apps.charge.serializers import ChargeSerializer
 from apps.evaluation_in_area.models import EvaluationArea
 from apps.evaluation_in_area.serializers.evaluation_area import EvaluationAreaSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -48,3 +53,9 @@ class EvaluationAreaViewSet(ModelViewSet):
         area_serializer = EvaluationAreaSerializer(available_areas, many=True)
         return Response(area_serializer.data, status.HTTP_200_OK)
 
+    @action(methods=['GET'], url_path='available-charges', detail=False, permission_classes=[IsAdminUser])
+    def get_available_charges_for_areas(self, request):
+        used_charge_ids: List[int] = EvaluationArea.objects.values_list('boss_charge', flat=True)
+        available_charges = Charge.objects.exclude(id_cargos__in=used_charge_ids).order_by('descripcion')
+        serializer = ChargeSerializer(available_charges, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
