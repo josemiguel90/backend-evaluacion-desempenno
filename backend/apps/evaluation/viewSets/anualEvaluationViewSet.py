@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
-from backend.extraPermissions import IsFoodAndDrinkBoss
+from backend.extraPermissions import IsEvaluatorFromArea
 from ..serializers.anualSerializer import AnualEvaluation, AnualEvaluationSerializer
 from ...hotel.models import Hotel
 from ...workers.models import Worker
@@ -21,7 +21,7 @@ def getAnualEvaluationId(worker_id: str, year: int) -> AnualEvaluation or None:
 class AnualEvaluationViewSet(viewsets.ModelViewSet):
     queryset = AnualEvaluation.objects.all().order_by('-year')
     serializer_class = AnualEvaluationSerializer
-    permission_classes = [IsAuthenticated, IsFoodAndDrinkBoss]
+    permission_classes = [IsAuthenticated, IsEvaluatorFromArea]
 
     @action(detail=False, methods=['POST'])
     def getAnualEvaluationsByYearAndHotel(self, request):

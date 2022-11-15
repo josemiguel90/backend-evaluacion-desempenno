@@ -2,14 +2,14 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from backend.extraPermissions import IsFoodAndDrinkBoss
+from backend.extraPermissions import IsEvaluatorFromArea
 from .serializers import OccupationalCategory, OccupationalCategoryMiniSerializer, OccupationalCategorySerializer
 
 
 class OccupationalCategoryViewSet(viewsets.ModelViewSet):
     queryset = OccupationalCategory.objects.filter(activo=True)
     serializer_class = OccupationalCategoryMiniSerializer
-    permission_classes = [IsAuthenticated, IsFoodAndDrinkBoss]
+    permission_classes = [IsAuthenticated, IsEvaluatorFromArea]
 
     def retrieve(self, request, *args, **kwargs):
         return Response(OccupationalCategorySerializer(self.get_object(), many=False).data, status=status.HTTP_200_OK)

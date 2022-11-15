@@ -3,14 +3,14 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from backend.extraPermissions import IsFoodAndDrinkBoss
+from backend.extraPermissions import IsEvaluatorFromArea
 from .serializers import Currency, CurrencySerializer, CurrencyMiniSerializer
 
 
 class CurrencyViewSet(viewsets.ModelViewSet):
     queryset = Currency.objects.all()
     serializer_class = CurrencySerializer
-    permission_classes = [IsAuthenticated, IsFoodAndDrinkBoss]
+    permission_classes = [IsAuthenticated, IsEvaluatorFromArea]
 
     @action(detail=False, methods=['GET'])
     def getActiveCoins(self, request):

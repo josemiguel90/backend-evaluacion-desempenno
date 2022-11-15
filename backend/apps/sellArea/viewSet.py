@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from backend.extraPermissions import IsFoodAndDrinkBoss
+from backend.extraPermissions import IsEvaluatorFromArea
 from backend.utils import getSaleAreaDeleteError
 from apps.hotel.models import Hotel
 
@@ -14,7 +14,7 @@ from .serializer import PuntoDeVenta, PuntoDeVentaSerializer
 class PuntoDeVentaViewSet(viewsets.ModelViewSet):
     queryset = PuntoDeVenta.objects.all()
     serializer_class = PuntoDeVentaSerializer
-    permission_classes = [IsAuthenticated, IsFoodAndDrinkBoss]
+    permission_classes = [IsAuthenticated, IsEvaluatorFromArea]
 
     @action(detail=False, methods=['POST'])
     def getSellAreasByHotel(self, request):

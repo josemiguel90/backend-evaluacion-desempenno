@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from apps.evaluation.serializers.monthlyMeliaEvaluationSerliazer import MonthlyMeliaEvaluationSerliazer
 from apps.hotel.models import Hotel
-from backend.extraPermissions import IsFoodAndDrinkBoss
+from backend.extraPermissions import IsEvaluatorFromArea
 from apps.evaluation.models import MonthlyGastronomyEvaluation, MonthlyMeliaEvaluation
 from apps.payTime.models import PayTime
 from apps.workers.models import Worker
@@ -31,7 +31,7 @@ def getMeliaEvaluationOnPayTime(pay_time: PayTime, worker: Worker):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsFoodAndDrinkBoss])
+@permission_classes([IsAuthenticated, IsEvaluatorFromArea])
 def getMonthlyPerformanceEvaluationReport(request):
     data = request.data
     try:

@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from ..serializers.monthlyMeliaEvaluationSerliazer import MonthlyMeliaEvaluation, MonthlyMeliaEvaluationSerliazer
-from backend.extraPermissions import IsFoodAndDrinkBoss
+from backend.extraPermissions import IsEvaluatorFromArea
 from ..views import getMeliaEvaluationOnPayTime, getGastronomyEvaluationOnPayTime
 from ...hotel.models import Hotel
 from ...payTime.models import PayTime
@@ -13,7 +13,7 @@ from ...workers.models import Worker
 class MonthlyMeliaEvaluationViewSet(viewsets.ModelViewSet):
     queryset = MonthlyMeliaEvaluation.objects.all()
     serializer_class = MonthlyMeliaEvaluationSerliazer
-    permission_classes = [IsAuthenticated, IsFoodAndDrinkBoss]
+    permission_classes = [IsAuthenticated, IsEvaluatorFromArea]
 
     @action(detail=False, methods=['POST'])
     def getWorkersMonthlyEvaluationByHotelAndPayTime(self, request):

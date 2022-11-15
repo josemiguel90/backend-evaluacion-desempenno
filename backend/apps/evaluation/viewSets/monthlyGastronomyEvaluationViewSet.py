@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from ..models import MonthlyGastronomyEvaluation, MonthlyMeliaEvaluation
-from backend.extraPermissions import IsFoodAndDrinkBoss
+from backend.extraPermissions import IsEvaluatorFromArea
 from ...payTime.models import PayTime
 from ...workers.models import Worker
 
@@ -23,7 +23,7 @@ def getMaxEval(indicators: []) -> int:
 class MonthlyGastronomyEvaluationViewSet(viewsets.ModelViewSet):
     queryset = MonthlyGastronomyEvaluation.objects.all()
     serializer_class = MonthlyGastronomyEvaluationSerializer
-    permission_classes = [IsAuthenticated, IsFoodAndDrinkBoss]
+    permission_classes = [IsAuthenticated, IsEvaluatorFromArea]
 
     @action(detail=False, methods=['POST'])
     def createMonthlyGastronomyEvaluation(self, request):

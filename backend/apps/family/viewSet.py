@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from backend.extraPermissions import IsFoodAndDrinkBoss
+from backend.extraPermissions import IsEvaluatorFromArea
 from backend.utils import getFamilyDeleteError
 from .serializers import FamilySerializer, Family
 
@@ -13,7 +13,7 @@ from .serializers import FamilySerializer, Family
 class FamilyViewSet(viewsets.ModelViewSet):
     queryset = Family.objects.filter(activo=True)
     serializer_class = FamilySerializer
-    permission_classes = [IsAuthenticated, IsFoodAndDrinkBoss]
+    permission_classes = [IsAuthenticated, IsEvaluatorFromArea]
 
     @action(detail=False, methods=['POST'])
     def updateFamilies(self, request):

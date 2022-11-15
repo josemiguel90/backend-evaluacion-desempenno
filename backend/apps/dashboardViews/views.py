@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from backend.extraPermissions import IsFoodAndDrinkBoss
+from backend.extraPermissions import IsEvaluatorFromArea
 from ..evaluation.models import MonthlyMeliaEvaluation, AnualEvaluation
 from ..salesPlan.models import MonthlySalePlan
 from ..family.models import Family
@@ -66,7 +66,7 @@ def getRangeOfAnualEvaluations(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsFoodAndDrinkBoss])
+@permission_classes([IsAuthenticated, IsEvaluatorFromArea])
 def getTableEvaluations(request):
     try:
         # Get last 3 Paytimes

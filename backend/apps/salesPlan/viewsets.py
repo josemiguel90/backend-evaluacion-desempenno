@@ -3,7 +3,7 @@ from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from backend.extraPermissions import IsFoodAndDrinkBoss
+from backend.extraPermissions import IsEvaluatorFromArea
 from backend.utils import getAnualPlanError, getAnualPlanDeleteError, getMonthlySalePlanCreateError
 from .serializers import AnualSalePlanSerializer, AnualSalePlan, AnualSalePlanMiniSerializer, MonthlySalePlan, \
     MonthlySalePlanForEditSerializer
@@ -16,7 +16,7 @@ from ..sellArea.models import PuntoDeVenta
 class AnualSalePlanViewSet(viewsets.ModelViewSet):
     queryset = AnualSalePlan.objects.all().order_by('-year')
     serializer_class = AnualSalePlanMiniSerializer
-    permission_classes = [IsAuthenticated, IsFoodAndDrinkBoss]
+    permission_classes = [IsAuthenticated, IsEvaluatorFromArea]
 
     def retrieve(self, request, *args, **kwargs):
         serializer = AnualSalePlanSerializer(self.get_object(), many=False)
