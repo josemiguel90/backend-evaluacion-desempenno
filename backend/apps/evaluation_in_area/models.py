@@ -65,7 +65,7 @@ class MonthEvaluation(models.Model):
     date = models.DateField(default=date.today)
     worker = models.ForeignKey(to=Worker, on_delete=models.PROTECT, related_name='+')
     worker_charge = models.ForeignKey(to=Charge, on_delete=models.PROTECT, related_name='+')
-    evaluator = models.CharField(max_length=100, null=False)
+    evaluator = models.ForeignKey(to=Worker, on_delete=models.PROTECT)
     evaluator_charge = models.ForeignKey(to=Charge, on_delete=models.PROTECT, related_name='+')
     payment_period = models.ForeignKey(to=PayTime, on_delete=models.PROTECT)
     evaluated_aspect = models.ManyToManyField(EvaluationAspect, through='MonthEvaluationAspectValue',

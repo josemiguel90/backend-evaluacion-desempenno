@@ -16,6 +16,7 @@ class MonthEvaluationSerializer(serializers.ModelSerializer):
     evaluation_area = EvaluationAreaSerializer(read_only=True)
     worker = WorkerSerializer(read_only=True)
     worker_charge = ChargeSerializer(read_only=True)
+    evaluator = WorkerSerializer(read_only=True)
     evaluator_charge = ChargeSerializer(read_only=True)
     payment_period = PayTimeSerializer(read_only=True)
     aspects_with_value = serializers.SerializerMethodField(read_only=True)

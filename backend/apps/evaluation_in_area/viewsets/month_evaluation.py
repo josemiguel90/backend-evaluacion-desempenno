@@ -2,7 +2,6 @@ import datetime
 from statistics import mean
 from typing import List
 
-from django.views.generic import detail
 from rest_framework import status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
@@ -40,7 +39,7 @@ class MonthEvaluationViewSet(ViewSet):
                                                date=datetime.date.today(),
                                                worker=worker,
                                                worker_charge=worker.cargo,
-                                               evaluator=f'{evaluator.first_name} {evaluator.last_name}',
+                                               evaluator=request.user.worker,
                                                evaluator_charge=evaluator.area.boss_charge,
                                                payment_period=payment_period)
             month_evaluation.save()
