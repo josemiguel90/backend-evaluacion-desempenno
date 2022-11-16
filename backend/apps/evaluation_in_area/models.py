@@ -100,3 +100,35 @@ class MeliaMonthEvaluationAspectValue(models.Model):
                                          related_name='melia_aspects')
     melia_aspect = models.ForeignKey(to=MeliaAspect, on_delete=models.CASCADE)
     assigned_value = models.IntegerField(validators=[MinValueValidator(2), MaxValueValidator(5)])
+
+
+class YearMeliaEvaluation(models.Model):
+
+    DEFICIENT_EVALUATION = 'Deficiente'
+    APPROPRIATE_EVALUATION = 'Adecuado'
+    SUPERIOR_EVALUATION = 'Superior'
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['year', 'worker', 'evaluation_area'],
+                                    name='unique_year_evaluation')
+        ]
+
+    year = models.IntegerField(validators=[MinValueValidator(1950)])
+    worker = models.ForeignKey(to=Worker, null=False, on_delete=models.RESTRICT, related_name='+')
+    worker_charge = models.ForeignKey(to=Charge, null=False, on_delete=models.RESTRICT, related_name='+')
+    evaluator = models.ForeignKey(to=Worker, null=False, on_delete=models.RESTRICT, related_name='+')
+    evaluator_charge = models.ForeignKey(to=Charge, null=False, on_delete=models.RESTRICT, related_name='+')
+    evaluation_area = models.ForeignKey(to=EvaluationArea, on_delete=models.RESTRICT, related_name='+')
+
+    # Indicadores
+    summary = models.CharField(max_length=500)
+    fulfillment = models.CharField(max_length=500)
+    behavior = models.CharField(max_length=500)
+    use_and_care = models.CharField(max_length=500)
+    recommendation = models.CharField(max_length=500)
+
+    final_evaluation = models.CharField(max_length=20,
+                                        choices=[(DEFICIENT_EVALUATION, DEFICIENT_EVALUATION),
+                                                 (APPROPRIATE_EVALUATION, APPROPRIATE_EVALUATION),
+                                                 (SUPERIOR_EVALUATION, SUPERIOR_EVALUATION)])

@@ -7,6 +7,8 @@ from apps.evaluation_in_area.viewsets.month_evaluation import MonthEvaluationVie
     get_area_evaluation_given_worker_and_payment_period, get_evaluations_in_area_and_payment_period, \
     update_month_evaluation, get_month_evaluation_by_id, undo_month_area_evaluation, \
     update_melia_values_and_observations_month_evaluation
+from apps.evaluation_in_area.viewsets.year_evaluation import create_year_evaluation, list_year_evaluations, \
+    get_year_evaluation_by_id, update_year_evaluation
 
 router = routers.DefaultRouter()
 router.register('evaluation-area', EvaluationAreaViewSet)
@@ -30,5 +32,13 @@ urlpatterns = [
 
     path('month-evaluation/area/delete/<int:month_evaluation_id>', undo_month_area_evaluation),
 
-    path('month-evaluation/melia/<int:month_evaluation_id>', update_melia_values_and_observations_month_evaluation)
+    path('month-evaluation/melia/<int:month_evaluation_id>', update_melia_values_and_observations_month_evaluation),
+
+    path('year-evaluation', create_year_evaluation),
+
+    path('year-evaluation/all/<int:year>', list_year_evaluations),
+
+    path('year-evaluation/<int:evaluation_id>', get_year_evaluation_by_id),
+
+    path('year-evaluation/update/<int:evaluation_id>', update_year_evaluation)
 ]
