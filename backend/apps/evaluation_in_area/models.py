@@ -120,6 +120,7 @@ class YearMeliaEvaluation(models.Model):
     evaluator = models.ForeignKey(to=Worker, null=False, on_delete=models.RESTRICT, related_name='+')
     evaluator_charge = models.ForeignKey(to=Charge, null=False, on_delete=models.RESTRICT, related_name='+')
     evaluation_area = models.ForeignKey(to=EvaluationArea, on_delete=models.RESTRICT, related_name='+')
+    date = models.DateField(default=date.today, null=False)
 
     # Indicadores
     summary = models.CharField(max_length=500)

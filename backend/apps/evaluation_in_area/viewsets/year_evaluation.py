@@ -29,7 +29,7 @@ def get_year_evaluation_by_id(request, evaluation_id):
         return Response(serializer.data, status.HTTP_200_OK)
 
     except YearMeliaEvaluation.DoesNotExist:
-        return Response(f'No existe la evaluación anual con id {evaluation_id}')
+        return Response(f'No existe la evaluación anual con id {evaluation_id}', status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['POST'])
@@ -85,7 +85,7 @@ def update_year_evaluation(request, evaluation_id):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     except YearMeliaEvaluation.DoesNotExist:
-        return Response(f'No existe la evaluación anual con id {evaluation_id}')
+        return Response(f'No existe la evaluación anual con id {evaluation_id}', status.HTTP_404_NOT_FOUND)
 
     except Exception as e:
         return Response(e.args[0], status.HTTP_500_INTERNAL_SERVER_ERROR)

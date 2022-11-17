@@ -11,7 +11,7 @@ class YearMeliaEvaluationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = YearMeliaEvaluation
-        fields = ['id', 'year', 'worker', 'evaluator', 'evaluation_area', 'summary',
+        fields = ['id', 'year', 'date', 'worker', 'evaluator', 'evaluation_area', 'summary',
                   'fulfillment', 'behavior', 'use_and_care', 'recommendation', 'final_evaluation']
 
     def get_evaluation_area(self, obj):
