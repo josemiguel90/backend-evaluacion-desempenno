@@ -29,11 +29,11 @@ class EvaluationAspect(models.Model):
     SALE_PLAN_FULFILMENT_TYPE = 'SALE_PLAN_FULFILMENT'
     CHECK_LIST_TYPE = 'CHECK_LIST'
 
-    name = models.CharField(max_length=80, null=False)
-    bad_option = models.CharField(max_length=80, null=False)
-    regular_option = models.CharField(max_length=80, null=False)
-    good_option = models.CharField(max_length=80, null=False)
-    very_good_option = models.CharField(max_length=80, null=False)
+    name = models.CharField(max_length=180, null=False)
+    bad_option = models.CharField(max_length=180, null=False)
+    regular_option = models.CharField(max_length=180, null=False)
+    good_option = models.CharField(max_length=180, null=False)
+    very_good_option = models.CharField(max_length=180, null=False)
     type = models.CharField(null=False,
                             max_length=30,
                             default=SELECTABLE_TYPE,
