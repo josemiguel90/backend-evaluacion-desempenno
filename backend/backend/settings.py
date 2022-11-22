@@ -59,7 +59,8 @@ INSTALLED_APPS = [
     'apps.salesPlan',
     'apps.payTime',
     'apps.evaluation',
-    'apps.evaluation_in_area'
+    'apps.evaluation_in_area',
+    'apps.replication'
 ]
 
 MIDDLEWARE = [
