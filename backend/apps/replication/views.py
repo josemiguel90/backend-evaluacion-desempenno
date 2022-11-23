@@ -93,3 +93,12 @@ def replicate_data_from_zun(request):
     set_last_replication(request)
 
     return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def is_it_24_hours_since_replication(request):
+
+    return Response({'isIt24HoursAgo': is_it_24_hours_ago_since_last_replication()},
+                    status.HTTP_200_OK)
+
