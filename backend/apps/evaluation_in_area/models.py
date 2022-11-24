@@ -13,7 +13,7 @@ class EvaluationArea(models.Model):
     GASTRONOMY_TYPE = 'gastronomy'
     HOUSEKEEPER_TYPE = 'housekeeper'
 
-    name = models.CharField(max_length=80, null=False, unique=True)
+    name = models.CharField(max_length=80, null=False)
     boss_charge = models.ForeignKey(Charge, on_delete=models.PROTECT, null=False)
     type = models.CharField(choices=((GASTRONOMY_TYPE, GASTRONOMY_TYPE),
                                      (HOUSEKEEPER_TYPE, HOUSEKEEPER_TYPE)),
@@ -21,6 +21,7 @@ class EvaluationArea(models.Model):
                             null=True,
                             default=None,
                             max_length=30)
+    active = models.BooleanField(default=True)
 
 
 class EvaluationAspect(models.Model):

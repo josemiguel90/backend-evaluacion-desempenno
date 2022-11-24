@@ -34,7 +34,6 @@ class UserMiniSerializer(serializers.ModelSerializer):
         return obj.email if obj.email != '' else 'No registrado'
 
     def get_rol(self, obj):
-        print(obj.area)
         if self.get_isAdmin(obj):
             return 'Administrador del sistema'
 
