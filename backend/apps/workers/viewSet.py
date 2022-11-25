@@ -85,6 +85,7 @@ class WorkerViewSet(viewsets.ModelViewSet):
                     op = w.operador
                 w.activo = False
                 w.area_evaluacion = None
+                w.operador = None
                 w.save()
                 if masDelete:
                     op.delete()
