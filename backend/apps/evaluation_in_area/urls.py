@@ -6,7 +6,7 @@ from django.urls import path
 from apps.evaluation_in_area.viewsets.month_evaluation import MonthEvaluationViewSet, \
     get_area_evaluation_given_worker_and_payment_period, get_evaluations_in_area_and_payment_period, \
     update_month_evaluation, get_month_evaluation_by_id, undo_month_area_evaluation, \
-    update_melia_values_and_observations_month_evaluation
+    update_melia_values_and_observations_month_evaluation, get_month_performance
 from apps.evaluation_in_area.viewsets.year_evaluation import create_year_evaluation, list_year_evaluations, \
     get_year_evaluation_by_id, update_year_evaluation
 
@@ -40,5 +40,7 @@ urlpatterns = [
 
     path('year-evaluation/<int:evaluation_id>', get_year_evaluation_by_id),
 
-    path('year-evaluation/update/<int:evaluation_id>', update_year_evaluation)
+    path('year-evaluation/update/<int:evaluation_id>', update_year_evaluation),
+
+    path('month-performance/<int:hotel_id>/<int:payment_period_id>', get_month_performance)
 ]

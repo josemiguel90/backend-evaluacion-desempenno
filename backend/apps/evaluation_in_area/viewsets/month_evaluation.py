@@ -1,4 +1,5 @@
 import datetime
+from functools import reduce
 from statistics import mean
 from typing import List
 
@@ -9,11 +10,15 @@ from rest_framework.viewsets import ViewSet
 
 from apps.evaluation_in_area.models import MonthEvaluation, MonthEvaluationAspectValue, MeliaAspect, EvaluationAspect, \
     MeliaMonthEvaluationAspectValue
+from apps.evaluation_in_area.serializers.melia_aspect import MeliaAspectSerializer
 from apps.evaluation_in_area.serializers.month_evaluation import MonthEvaluationSerializer, \
     SimpleMonthEvaluationSerializer
 from apps.evaluation_in_area.util import find_aspect_with_id_in_list, \
     find_month_evaluation_for_worker_and_payment_period
+from apps.hotel.models import Hotel
+from apps.hotel.serializers import HotelSerializer
 from apps.payTime.models import PayTime
+from apps.payTime.serializers import PayTimeSerializer
 from apps.users.models import User
 from apps.workers.models import Worker
 from backend.extraPermissions import IsEvaluatorFromArea
@@ -219,3 +224,57 @@ def undo_month_area_evaluation(request, month_evaluation_id):
     except MonthEvaluation.DoesNotExist:
         return Response({'detail': f'La evaluación mensual con id {month_evaluation_id} no existe'},
                         status.HTTP_404_NOT_FOUND)
+
+
+def calculate_discount(totalPoints):
+    # {puntos totales : descuento recibido}
+    values = {14: 50, 15: 53, 16: 57, 17: 61, 18: 65, 19: 69, 20: 73, 21: 75, 22: 79, 23: 83, 24: 87, 25: 91,
+              26: 95, 27: 99}
+    if totalPoints in values:
+        return 100 - values[totalPoints]
+    return 0
+
+
+def calculate_total_points(aspects_with_value):
+    total = 0
+    for an_aspect in aspects_with_value:
+        total += an_aspect.assigned_value
+    return total
+
+
+@api_view(['GET'])
+@permission_classes([IsEvaluatorFromArea])
+def get_month_performance(request, hotel_id, payment_period_id):
+    """Devuelve el desempeño mensual de los trbajadores evaluados"""
+    melia_aspects = MeliaAspect.objects.all().order_by('order')
+    workers = Worker.objects.filter(activo=True,
+                                    area_evaluacion=request.user.area,
+                                    unidad_org__id=hotel_id)
+    payment_period = PayTime.objects.get(id=payment_period_id)
+    hotel = Hotel.objects.get(id=hotel_id)
+
+    workers_with_performance = []
+
+    for a_worker in workers:
+        evaluation = MonthEvaluation.objects.filter(
+            worker__no_interno=a_worker.no_interno,
+            evaluation_area=request.user.area,
+            payment_period__id=payment_period_id).first()
+
+        if evaluation is not None:
+            aspects_with_values = MeliaMonthEvaluationAspectValue.objects.filter(month_evaluation=evaluation)\
+                .order_by('melia_aspect__order')
+            total_points = calculate_total_points(aspects_with_values)
+            discount = calculate_discount(total_points)
+            values = list(aspects_with_values.values_list('assigned_value', flat=True))
+            worker_performance = {'workerName': a_worker.nombreCompleto(),
+                                  'workerId': a_worker.no_interno,
+                                  'totalPoints': total_points,
+                                  'values': values,
+                                  'discount': discount}
+            workers_with_performance.append(worker_performance)
+
+    return Response({'meliaAspects': MeliaAspectSerializer(melia_aspects, many=True).data,
+                     'paymentPeriod': PayTimeSerializer(payment_period).data,
+                     'hotel': HotelSerializer(hotel).data,
+                     'workerPerformances': workers_with_performance})
