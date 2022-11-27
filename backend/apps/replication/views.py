@@ -1,3 +1,4 @@
+from django.http import HttpResponseServerError
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.parsers import JSONParser
@@ -30,8 +31,11 @@ def send_replication_request() -> requests.Response:
             'posDBNames': pos_db_names,
             'workerIds': workers_ids, 'familyIds': family_ids}
 
-    return requests.post(url=get_zun_url(), json=data,
-                         headers={'Content-Type': 'application/json'})
+    try:
+        return requests.post(url=get_zun_url(), json=data,
+                             headers={'Content-Type': 'application/json'})
+    except Exception:
+        return None
 
 
 def is_it_24_hours_ago_since_last_replication():
@@ -68,6 +72,8 @@ def replicate_data_from_zun(request):
         return Response(status=status.HTTP_200_OK)
 
     response = send_replication_request()
+    if response is None:
+        return Response('No se pudo conectar con el Zun', status.HTTP_503_SERVICE_UNAVAILABLE)
 
     if response.status_code != requests.codes.ok:
         return Response('No se pudo conectar con el ZUN',
