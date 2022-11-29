@@ -1,5 +1,6 @@
 from apps.category.models import OccupationalCategory
 from apps.charge.models import Charge
+from apps.hotel.models import Hotel
 from apps.workers.models import Worker
 
 
@@ -18,5 +19,7 @@ def update_workers(updated_workers):
         old_worker.cargo = Charge.objects.get(id_cargos=an_updated_worker['cargo']['id_cargos'])
         old_worker.cat_ocup = OccupationalCategory.objects.get(
             id_categ=an_updated_worker['cat_ocup']['id_categ'])
+        old_worker.unidad_org = Hotel.objects.get(
+            zunPrUnidadOrganizativaId=an_updated_worker['unidad_org'])
         old_worker.activo = an_updated_worker.get('activo')
         old_worker.save()
