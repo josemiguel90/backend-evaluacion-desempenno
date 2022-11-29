@@ -1,6 +1,8 @@
 from rest_framework import routers
 from apps.evaluation_in_area.viewsets.evaluation_area import EvaluationAreaViewSet
 from apps.evaluation_in_area.viewsets.evaluation_aspect import EvaluationAspectViewSet
+from apps.evaluation_in_area.viewsets.evaluation_summaries import get_ranges_of_month_melia_evaluations, \
+    get_ranges_of_year_melia_evaluations, get_last_three_evaluation_periods
 from apps.evaluation_in_area.viewsets.melia_aspect import MeliaAspectListView, MeliaAspectRetrieveView
 from django.urls import path
 from apps.evaluation_in_area.viewsets.month_evaluation import MonthEvaluationViewSet, \
@@ -42,5 +44,11 @@ urlpatterns = [
 
     path('year-evaluation/update/<int:evaluation_id>', update_year_evaluation),
 
-    path('month-performance/<int:hotel_id>/<int:payment_period_id>', get_month_performance)
+    path('month-performance/<int:hotel_id>/<int:payment_period_id>', get_month_performance),
+
+    path('summary/melia-month-evaluation-ranges', get_ranges_of_month_melia_evaluations),
+
+    path('summary/melia-year-evaluation-ranges', get_ranges_of_year_melia_evaluations),
+
+    path('summary/last-three-evaluation-periods', get_last_three_evaluation_periods)
 ]

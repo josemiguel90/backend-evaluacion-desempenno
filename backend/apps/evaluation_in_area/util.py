@@ -55,3 +55,14 @@ def find_month_evaluation_for_worker_and_payment_period(user, worker, payment_pe
 
     except MonthEvaluation.DoesNotExist:
         return None
+
+
+def get_month_evaluation(payment_period, worker, area):
+    evaluations = MonthEvaluation.objects.filter(payment_period=payment_period, worker=worker,
+                                                evaluation_area=area)
+    if evaluations.exists():
+        return evaluations.get(payment_period=payment_period,
+                              worker=worker,
+                              evaluation_area=area)
+
+    return None

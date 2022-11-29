@@ -1,4 +1,5 @@
 from datetime import date
+from typing import List
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -75,6 +76,45 @@ class MonthEvaluation(models.Model):
                                                     through_fields=['month_evaluation', 'melia_aspect'])
     melia_observations = models.CharField(max_length=500, default='')
 
+    def get_melia_final_note(self):
+        melia_aspects_with_value = MeliaMonthEvaluationAspectValue.objects.filter(month_evaluation=self)
+        values_in_evaluation: List[int] = list(melia_aspects_with_value.values_list('assigned_value', flat=True))
+
+        if len(values_in_evaluation) == 0:
+            raise Exception(f'No melia values for evaluation with id {self.id}')
+
+        total = sum(values_in_evaluation, 0)
+        final_note = 'M'
+
+        if 14 <= total <= 20:
+            final_note = 'M'
+        elif 21 <= total <= 27:
+            final_note = 'R'
+        elif 28 <= total <= 31:
+            final_note = 'B'
+        elif 32 <= total <= 35:
+            final_note = 'MB'
+        else:
+            raise Exception(f'Total of melia evaluation values are not between 14 and 35: {total}')
+
+        # Condiciones especiales para las evaluaciones
+
+        # La nota no puede ser MB si se obtuvo una de Mal o Regular
+        if final_note == 'MB' and (values_in_evaluation.count(2) > 0 or values_in_evaluation.count(3) > 0):
+            final_note = 'B'
+
+        # La nota no puede ser B si se obtuvo alguna nota de Mal
+        if final_note == 'B' and values_in_evaluation.count(2) > 0:
+            final_note = 'R'
+
+        return final_note
+
+    def melia_total_points(self):
+        total = 0
+        aspects_with_value = MeliaMonthEvaluationAspectValue.objects.filter(month_evaluation=self.id)
+        for aspect_with_value in aspects_with_value:
+            total += aspect_with_value.assigned_value
+        return total
 
 class MonthEvaluationAspectValue(models.Model):
 
