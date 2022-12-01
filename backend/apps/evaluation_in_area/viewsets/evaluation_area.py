@@ -13,7 +13,7 @@ from apps.evaluation_in_area.serializers.evaluation_area import EvaluationAreaSe
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.decorators import action
 
-from apps.evaluation_in_area.util import handle_evaluation_area_validation_error
+from apps.evaluation_in_area.util import handle_evaluation_area_validation_error, check_area_name_is_not_used
 from apps.users.models import User
 from apps.workers.models import Worker
 
@@ -26,12 +26,21 @@ class EvaluationAreaViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         try:
+            name = request.data['name']
+            bad_request_response = check_area_name_is_not_used(name)
+            if bad_request_response:
+                return bad_request_response
             return super().create(request, *args, **kwargs)
         except ValidationError as e:
             return handle_evaluation_area_validation_error(e, request)
 
     def update(self, request, *args, **kwargs):
         try:
+            name = request.data['name']
+            area = self.get_object()
+            bad_request_response = check_area_name_is_not_used(name, area.id)
+            if bad_request_response:
+                return bad_request_response
             return super().update(request, *args, **kwargs)
         except ValidationError as e:
             return handle_evaluation_area_validation_error(e, request)

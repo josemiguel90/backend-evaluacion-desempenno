@@ -66,3 +66,12 @@ def get_month_evaluation(payment_period, worker, area):
                               evaluation_area=area)
 
     return None
+
+
+def check_area_name_is_not_used(name, area_id=None):
+    active_areas = EvaluationArea.objects.filter(active=True)
+    active_areas = active_areas.exclude(id=area_id) if area_id else active_areas
+
+    if active_areas.filter(name=name).exists():
+        return Response({'detail': f'Ya existe un área con el nombre {name}'},
+                        status.HTTP_400_BAD_REQUEST)
