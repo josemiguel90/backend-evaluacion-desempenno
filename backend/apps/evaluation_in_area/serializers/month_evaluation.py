@@ -1,6 +1,8 @@
 import statistics
+from datetime import timedelta, date
 from typing import List
 
+from django.utils import timezone
 from rest_framework import serializers
 
 from .evaluation_area import EvaluationAreaSerializer
@@ -58,12 +60,13 @@ class MonthEvaluationSerializer(serializers.ModelSerializer):
     melia_aspects_with_value = serializers.SerializerMethodField(read_only=True)
     final_note = serializers.SerializerMethodField(read_only=True)
     final_melia_note = serializers.SerializerMethodField(read_only=True)
+    can_be_modified = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = MonthEvaluation
         fields = ['id', 'date', 'evaluation_area', 'worker', 'worker_charge', 'evaluator', 'evaluator_charge',
                   'payment_period', 'aspects_with_value', 'melia_aspects_with_value', 'final_note',
-                  'final_melia_note', 'melia_observations']
+                  'final_melia_note', 'melia_observations', 'can_be_modified']
 
     def get_aspects_with_value(self, obj):
         valued_aspects = MonthEvaluationAspectValue.objects.filter(month_evaluation=obj)
@@ -96,6 +99,11 @@ class MonthEvaluationSerializer(serializers.ModelSerializer):
     def get_final_melia_note(self, obj):
         return calculate_final_melia_note(obj)
 
+    def get_can_be_modified(self, evaluation: MonthEvaluation):
+        thirty_days = timedelta(days=30)
+        today = date.today()
+        return today - evaluation.date < thirty_days
+
 
 class SimpleMonthEvaluationSerializer(MonthEvaluationSerializer):
     """
@@ -108,7 +116,7 @@ class SimpleMonthEvaluationSerializer(MonthEvaluationSerializer):
     class Meta:
         model = MonthEvaluation
         fields = ['id', 'date', 'evaluation_area', 'worker', 'worker_charge', 'evaluator', 'evaluator_charge',
-                  'payment_period', 'final_note', 'final_melia_note']
+                  'payment_period', 'final_note', 'final_melia_note', 'can_be_modified']
 
     def get_final_note(self, obj):
         valued_aspects = MonthEvaluationAspectValue.objects.filter(month_evaluation=obj)
